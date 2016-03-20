@@ -4,10 +4,12 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
+ * DAO
  * Унифицированный интерфейс управления персистентным состоянием объектов
  * @param <T> тип объекта персистенции
  * @param <PK> тип первичного ключа
  */
+
 public interface GenericDao<T extends Identified<PK>, PK extends Serializable> {
 
     /** Создает новую запись и соответствующий ей объект */
@@ -27,4 +29,5 @@ public interface GenericDao<T extends Identified<PK>, PK extends Serializable> {
 
     /** Возвращает список объектов соответствующих всем записям в базе данных */
     public List<T> getAll() throws PersistException;
+
 }

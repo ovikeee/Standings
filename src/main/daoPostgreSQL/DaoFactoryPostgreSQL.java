@@ -12,28 +12,26 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ * Реализация DaoFactory для СУБД PostgreSQL.
+ *
+ * */
 public class DaoFactoryPostgreSQL implements DaoFactory<Connection> {
 
-    private String url = "java:jboss/datasources/PostgreDataSource";//URL адрес
-    private Map<Class, DaoCreator> creators;
+    private String jndi = "java:jboss/datasources/PostgreDataSource";//JNDI
+    private Map<Class, DaoCreator> creators; //Map с ключом типа Class, возвращающий новые экземпляры соответствующие ключу дао объектов
+    private Connection connection = null; //соединение к БД
 
+    @Override
     public Connection getContext() throws PersistException {
-        Connection connection = null;
-        try {
-            InitialContext ic = new InitialContext();
-            DataSource ds = (DataSource) ic.lookup(url);
-            connection = ds.getConnection();
-        } catch (SQLException e) {
-            throw new PersistException(e);
-        } catch (NamingException e) {
-            e.printStackTrace();
-        }
         return  connection;
     }
 
+    /**
+     * Возвращает DAO объект, для соответствующего класса
+     * */
     @Override
-    public GenericDao getDao(Connection connection, Class dtoClass) throws PersistException {
+    public GenericDao getDao(Class dtoClass) throws PersistException {
         DaoCreator creator = creators.get(dtoClass);
         if (creator == null) {
             throw new PersistException("Dao object for " + dtoClass + " not found.");
@@ -42,7 +40,12 @@ public class DaoFactoryPostgreSQL implements DaoFactory<Connection> {
     }
 
     public DaoFactoryPostgreSQL() {
-
+        try {
+        //создание подключения
+        InitialContext ic = new InitialContext();
+        DataSource ds = (DataSource) ic.lookup(jndi);
+        connection = ds.getConnection();
+        //инициализация карты
         creators = new HashMap<Class, DaoCreator>();
         creators.put(Match.class, new DaoCreator<Connection>() {
             @Override
@@ -62,6 +65,10 @@ public class DaoFactoryPostgreSQL implements DaoFactory<Connection> {
                 return new DaoTournamentPostgreSQL(connection);
             }
         });
-
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (NamingException e) {
+            e.printStackTrace();
+        }
     }
 }

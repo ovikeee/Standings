@@ -4,7 +4,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
-
+/**
+ * Управление таблицой matches в БД
+ * CRUD операции, получение объектного представления объектов БД.
+ */
 public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
 
     private class PersistMatch extends Match {
@@ -17,10 +20,6 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
     public String getSelectQuery() {
         return "SELECT * FROM matches";
     }
-
-//    public String getSelectResulQuery() {
-//        return "select match_id,match_data,t1.title,t2.title,owner_id_score, guests_id_score, next_match_id,status from matches,teams t1, teams t2 where owner_id=t1.id and guests_id=t2.id;";
-//    }
 
     @Override
     public String getInsertQuery() {
@@ -49,6 +48,7 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
     @Override
     public Match create() throws PersistException {
         Match g = new Match();
+
         return persist(g);
     }
 
