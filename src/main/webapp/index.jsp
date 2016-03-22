@@ -1,47 +1,81 @@
-Источник
-
-СтилиФорматированиеШрифтРазмер
-
-<table align="center" border="1" cellpadding="0" cellspacing="0" style="width: 700px">
-    <caption><input maxlength="24" name="find" size="25" type="text"><input name="find" type="button" value="Найти"><br>
-        <br>
-        <input name="add" type="button" value="Добавить"> <input name="delete" type="button" value="Удалить"> <input name="edit" type="button" value="Изменить"><br>
-        <br>
-        Турнирная таблица: Кубок России</caption>
-    <thead>
-    <tr>
-        <th scope="col">id матча</th>
-        <th scope="col">стадия</th>
-        <th scope="col">дата матча</th>
-        <th scope="col">хозяева</th>
-        <th scope="col">гости</th>
-        <th scope="col">счёт</th>
-        <th scope="col">следующий матч</th>
-        <th scope="col">статус игры</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td style="text-align: center;">4</td>
-        <td style="text-align: center;">1/4</td>
-        <td style="text-align: center;">2015-06-15</td>
-        <td style="text-align: center;">Ростов</td>
-        <td style="text-align: center;">ЦСКА</td>
-        <td style="text-align: center;">2-0</td>
-        <td style="text-align: center;"><a href="http://google.com" target="_blank">Ростов-Динамо</a></td>
-        <td style="text-align: center;">завершен</td>
-    </tr>
-    <tr>
-        <td style="text-align: center;">5</td>
-        <td style="text-align: center;">1/4</td>
-        <td style="text-align: center;">2015-06-15</td>
-        <td style="text-align: center;">Динамо</td>
-        <td style="text-align: center;">Анжи</td>
-        <td style="text-align: center;">2-1</td>
-        <td style="text-align: center;"><a href="http://google.com" target="_blank">Ростов-Динамо</a></td>
-        <td style="text-align: center;">завершен</td>
-    </tr>
-    </tbody>
-</table>
-<p>&nbsp;</p>
-
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html>
+<head>
+    <title></title>
+    <script type="text/javascript" src="showAllMatches.js"></script>
+</head>
+<body onload="init()">
+<form action="">
+    <p><input name="results" onclick="location.href='index.jsp';" type="button" value="Р РµР·СѓР»СЊС‚Р°С‚С‹">&nbsp;<input
+            name="tournaments" onclick="location.href='tournament_editor.jsp';" type="button"
+            value="РўСѓСЂРЅРёСЂС‹">&nbsp;<input name="teams" onclick="location.href='team_editor.jsp';" type="button"
+                                         value="РљРѕРјР°РЅРґС‹">&nbsp;<input name="matches"
+                                                                      onclick="location.href='match_editor.jsp';"
+                                                                      type="button" value="РњР°С‚С‡Рё"></p>
+    <table align="center" border="0" cellpadding="0" cellspacing="0">
+        <tbody>
+        <tr>
+            <td style="text-align: center;">Р’С‹Р±РµСЂРёС‚Рµ С‚СѓСЂРЅРёСЂ</td>
+            <td><select id="tournaments-selector" name="choice">
+                <option value="1">La Liga</option>
+                <option value="2">Cup of America</option>
+                <option selected="selected" value="3">Р§Рњ 2018</option>
+                <option value="4">Russian Cup</option>
+                <option value=""></option>
+            </select></td>
+        </tr>
+        <tr>
+            <td>Р’С‹Р±РµСЂРµС‚Рµ СЃРµР·РѕРЅ</td>
+            <td><select id="season-selector">
+                <option value="1">2015</option>
+                <option value="2">2020</option>
+                <option selected="selected" value="3">2018</option>
+                <option value="4">2011/2012</option>
+                <option value="">2015/2016</option>
+            </select></td>
+        </tr>
+        </tbody>
+    </table>
+    <table id="matches-table" align="center" border="1" cellpadding="0" cellspacing="0" style="width: 700px">
+        <caption><br>
+            <input name="show" type="button" onclick="showTable()" value="РџРѕРєР°Р·Р°С‚СЊ С‚СѓСЂРЅРёСЂРЅСѓСЋ С‚Р°Р±Р»РёС†Сѓ"><br>
+            <br>
+            <input maxlength="24" name="find" size="25" type="text"> <select name="param">
+                <option value="1">id РјР°С‚С‡Р°</option>
+                <option selected="selected" value="2">СЃС‚Р°РґРёСЏ</option>
+                <option value="3">РґР°С‚Р°</option>
+                <option value="4">РєРѕРјР°РЅРґР°</option>
+                <option value="5">СЃС‚Р°С‚СѓСЃ РјР°С‚С‡Р°</option>
+            </select> <input name="find_match" type="submit" id="find_match" value="РќР°Р№С‚Рё"><br>
+            <br>
+            РўСѓСЂРЅРёСЂРЅР°СЏ С‚Р°Р±Р»РёС†Р°: РљСѓР±РѕРє Р РѕСЃСЃРёРё
+        </caption>
+        <thead>
+        <tr>
+            <th scope="col">id РјР°С‚С‡Р°</th>
+            <th scope="col">СЃС‚Р°РґРёСЏ</th>
+            <th scope="col">РґР°С‚Р° РјР°С‚С‡Р°</th>
+            <th scope="col">С…РѕР·СЏРµРІР°</th>
+            <th scope="col">РіРѕСЃС‚Рё</th>
+            <th scope="col">СЃС‡С‘С‚</th>
+            <th scope="col">СЃР»РµРґСѓСЋС‰РёР№ РјР°С‚С‡</th>
+            <th scope="col">СЃС‚Р°С‚СѓСЃ РёРіСЂС‹</th>
+        </tr>
+        </thead>
+        <tbody id="tbody_id">
+        <tr>
+            <td style="text-align: center;">4</td>
+            <td style="text-align: center;">1/4</td>
+            <td style="text-align: center;">2015-06-15</td>
+            <td style="text-align: center;">Р РѕСЃС‚РѕРІ</td>
+            <td style="text-align: center;">Р¦РЎРљРђ</td>
+            <td style="text-align: center;">2-0</td>
+            <td style="text-align: center;"><a href="http://google.com" target="_blank">Р РѕСЃС‚РѕРІ-Р”РёРЅР°РјРѕ</a></td>
+            <td style="text-align: center;">Р·Р°РІРµСЂС€РµРЅ</td>
+        </tr>
+        </tbody>
+    </table>
+    <p>&nbsp;</p>
+</form>
+</body>
+</html>
