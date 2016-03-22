@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
+
 /**
  * Управление таблицой matches в БД
  * CRUD операции, получение объектного представления объектов БД.
@@ -23,13 +24,14 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
 
     @Override
     public String getInsertQuery() {
-        return "insert into matches (tournament_id, match_data, next_match_id, guests_id, owner_id_score, guests_id_score," +
-                " next_match_id, status ) values(?,?,?,?,?,?,?,?);";
+        return "insert into matches (tournament_id, stage, match_data, next_match_id, guests_id, owner_id_score, guests_id_score," +
+                " next_match_id, status ) values(?,?,?,?,?,?,?,?,?);";
     }
 
     @Override
     public String getUpdateQuery() {
         return "UPDATE matches SET" +
+                " stage ?," +
                 " tournament_id ?," +
                 " match_data ?," +
                 " owner_id integer ?," +
@@ -58,20 +60,21 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
 
     @Override
     protected List<Match> parseResultSet(ResultSet rs) throws PersistException {
-        LinkedList<Match> result = new LinkedList<Match>();
+        LinkedList<Match> result = new LinkedList<>();
         try {
             while (rs.next()) {
-                PersistMatch Match = new PersistMatch();
-                Match.setId(rs.getInt("match_id"));
-                Match.setTournamentId(rs.getInt("tournament_id"));
-                Match.setMatchData(rs.getDate("match_data"));
-                Match.setOwnerId(rs.getInt("owner_id"));
-                Match.setGuestsId(rs.getInt("guests_id"));
-                Match.setOwnerScore(rs.getInt("owner_id_score"));
-                Match.setGuestsScore(rs.getInt("guests_id_score"));
-                Match.setNextMatchId(rs.getInt("next_match_id"));
-                Match.setStatus(rs.getString("status"));
-                result.add(Match);
+                PersistMatch match = new PersistMatch();
+                match.setId(rs.getInt("match_id"));
+                match.setStage(rs.getString("stage"));
+                match.setTournamentId(rs.getInt("tournament_id"));
+                match.setMatchData(rs.getDate("match_data"));
+                match.setOwnerId(rs.getInt("owner_id"));
+                match.setGuestsId(rs.getInt("guests_id"));
+                match.setOwnerScore(rs.getInt("owner_id_score"));
+                match.setGuestsScore(rs.getInt("guests_id_score"));
+                match.setNextMatchId(rs.getInt("next_match_id"));
+                match.setStatus(rs.getString("status"));
+                result.add(match);
             }
         } catch (Exception e) {
             throw new PersistException(e);
@@ -82,14 +85,15 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
     @Override
     protected void prepareStatementForInsert(PreparedStatement statement, Match object) throws PersistException {
         try {
-            statement.setInt(1, object.getTournamentId());
-            statement.setDate(2, (Date) object.getMatchData());
-            statement.setInt(3, object.getOwnerId());
-            statement.setInt(4, object.getGuestsId());
-            statement.setInt(5, object.getOwnerScore());
-            statement.setInt(6, object.getGuestsScore());
-            statement.setInt(7, object.getNextMatchId());
-            statement.setString(8, object.getStatus());
+            statement.setString(1, object.getStage());
+            statement.setInt(2, object.getTournamentId());
+            statement.setDate(3, (Date) object.getMatchData());
+            statement.setInt(4, object.getOwnerId());
+            statement.setInt(5, object.getGuestsId());
+            statement.setInt(6, object.getOwnerScore());
+            statement.setInt(7, object.getGuestsScore());
+            statement.setInt(8, object.getNextMatchId());
+            statement.setString(9, object.getStatus());
         } catch (Exception e) {
             throw new PersistException(e);
         }
@@ -98,15 +102,16 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
     @Override
     protected void prepareStatementForUpdate(PreparedStatement statement, Match object) throws PersistException {
         try {
-            statement.setInt(1, object.getTournamentId());
-            statement.setDate(2, (Date) object.getMatchData());
-            statement.setInt(3, object.getOwnerId());
-            statement.setInt(4, object.getGuestsId());
-            statement.setInt(5, object.getOwnerScore());
-            statement.setInt(6, object.getGuestsScore());
-            statement.setInt(7, object.getNextMatchId());
-            statement.setString(8, object.getStatus());
-            statement.setInt(9, object.getId());
+            statement.setString(1, object.getStage());
+            statement.setInt(2, object.getTournamentId());
+            statement.setDate(3, (Date) object.getMatchData());
+            statement.setInt(4, object.getOwnerId());
+            statement.setInt(5, object.getGuestsId());
+            statement.setInt(6, object.getOwnerScore());
+            statement.setInt(7, object.getGuestsScore());
+            statement.setInt(8, object.getNextMatchId());
+            statement.setString(9, object.getStatus());
+            statement.setInt(10, object.getId());
         } catch (Exception e) {
             throw new PersistException(e);
         }
