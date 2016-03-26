@@ -17,6 +17,27 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
         }
     }
 
+    public DaoMatchPostgreSQL(Connection connection) {
+        super(connection);
+    }
+
+    public List<Match> getCascadeMatches(int id) {
+        List<Match> list = null;
+        String sql = "WITH RECURSIVE r AS ( SELECT a.* FROM matches a  WHERE id = "+id+" UNION ALL SELECT b.* FROM matches b JOIN r  ON b.next_match_id = r.id ) SELECT * FROM r;";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+           // statement.setInt(1, 3);
+            ResultSet rs = statement.executeQuery();
+            list = parseResultSet(rs);
+        } catch (Exception e) {
+            // throw new PersistException(e);
+        }
+        return list;
+    }
+
+    public void deleteCascade() {
+
+    }
+
     @Override
     public String getSelectQuery() {
         return "SELECT * FROM matches";
@@ -24,7 +45,7 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
 
     @Override
     public String getInsertQuery() {
-        return "insert into matches (tournament_id, stage, match_data, next_match_id, guests_id, owner_id_score, guests_id_score," +
+        return "insert into matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score," +
                 " next_match_id, status ) values(?,?,?,?,?,?,?,?,?);";
     }
 
@@ -39,23 +60,18 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
                 " owner_id_score ?," +
                 " guests_id_score ?," +
                 " next_match_id ?," +
-                " status ? WHERE match_id= ?;";
+                " status ? WHERE id= ?;";
     }
 
     @Override
     public String getDeleteQuery() {
-        return "DELETE FROM matches WHERE match_id= ?;";
+        return "DELETE FROM matches WHERE id= ?;";
     }
 
     @Override
     public Match create() throws PersistException {
         Match g = new Match();
-
-        return persist(g);
-    }
-
-    public DaoMatchPostgreSQL(Connection connection) {
-        super(connection);
+        return g;
     }
 
     @Override
@@ -64,7 +80,7 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
         try {
             while (rs.next()) {
                 PersistMatch match = new PersistMatch();
-                match.setId(rs.getInt("match_id"));
+                match.setId(rs.getInt("id"));
                 match.setStage(rs.getString("stage"));
                 match.setTournamentId(rs.getInt("tournament_id"));
                 match.setMatchData(rs.getDate("match_data"));

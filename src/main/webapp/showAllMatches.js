@@ -15,9 +15,13 @@ function init() {
 }
 
 function callback() {
-    clearTable();
     if (req.readyState == 4) {
         if (req.status == 200) {
+            clearTable();
+            parseMessages(req.responseText);
+        }else if (req.status == 555){
+            clearTable();
+            alert("you wanna delete cascade next match?");
             parseMessages(req.responseText);
         }
     }
@@ -97,7 +101,9 @@ function appendWeight(match_id, stage, tournament_id, data, owner, guests, resul
     cell = document.createElement("td");
     ref = document.createElement("a");
     ref.textContent = "X";
-    ref.setAttribute("href","http://htmlbook.ru/samhtml/tablitsy/atributy-tega-td")
+   // ref.setAttribute("href", "")
+    ref.setAttribute("id", match_id)
+    ref.setAttribute("onClick", "removeMatch(this)")
     cell.appendChild(ref);
     row.appendChild(cell);
 
@@ -107,20 +113,84 @@ function appendWeight(match_id, stage, tournament_id, data, owner, guests, resul
 
 
 function showTable() {
-    // Формируем адрес с параметрами
-    var url = "matches";
-
-    // Создаем объект запроса
-    req = new XMLHttpRequest();
-
-    // Указываем метод, адрес и асинхронность
-    req.open("GET", url, true);
-
-    // Указываем функцию для обратного вызова
-    req.onreadystatechange = callback;
-
-    // Отправляем запрос
-    req.send(null);
+    var url = "matches?type=showAllMatches";
+    action(url);
 }
 
+function addMatch() {
+    if (checkFields()) {
+        var url = "matches?type=addMatch" +
+            "&tournamentId=" + document.getElementById("tournamentId").value +
+            "&stageId=" + document.getElementById("stageId").options[document.getElementById("stageId").options.selectedIndex].text +
+            "&dateId=" + document.getElementById("dateId").options[document.getElementById("dateId").options.selectedIndex].text +
+            "&ownerId=" + document.getElementById("ownerId").options[document.getElementById("ownerId").options.selectedIndex].text +
+            "&guestsId=" + document.getElementById("guestsId").options[document.getElementById("guestsId").options.selectedIndex].text +
+            "&scoreId=" + document.getElementById("scoreId").value +
+            "&next_matchId=" + document.getElementById("next_matchId").value +
+            "&statusId=" + document.getElementById("statusId").options[document.getElementById("statusId").options.selectedIndex].text
+        action(url);
+    }
+}
+
+function removeMatch(element) {
+    if (element.id != null) {
+        var url = "matches?type=removeMatch" +
+            "&matchId=" + element.id;
+        action(url);
+    }
+}
+
+function checkFields() {
+    //проверка обязательных полей ввода
+    return true;
+}
+
+function action(url) {
+// Формируем адрес с параметрами
+// Создаем объект запроса
+    req = new XMLHttpRequest();
+
+// Указываем метод, адрес и асинхронность
+    req.open("GET", url, true);
+
+// Указываем функцию для обратного вызова
+    req.onreadystatechange = callback;
+
+// Отправляем запрос
+    req.send(null);
+}
+//function sendToServ() {
+//    $.ajax({
+//        type: "POST",
+//        url: "matches",
+//        dataType: "json",
+//        data: {
+//            stageId: document.getElementById("stageId").options[document.getElementById("stageId").options.selectedIndex].text
+//        },
+//        success: function (data) {
+//            alert(data[0].stage);
+//        }
+//    })
+//    ;
+//}
+
+
+//function sendToServ2() {
+//
+//    req = new XMLHttpRequest();
+//
+//    var json = JSON.stringify({
+//        name: "Виктор",
+//        surname: "Цой"
+//    });
+//
+//    req.open("POST", 'matches', true)
+//    req.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+//
+//    req.onreadystatechange = callback;
+//
+//// Отсылаем объект в формате JSON и с Content-Type application/json
+//// Сервер должен уметь такой Content-Type принимать и раскодировать
+//    req.send(json);
+//}
 

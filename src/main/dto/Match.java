@@ -1,11 +1,11 @@
-import java.util.Date;
-
+import java.sql.Date;
 /**
  * Created by User on 19.03.2016.
  */
 public class Match implements Identified<Integer> {
     private Integer id = null;
     private int tournamentId;
+    private String stage;
     private Date matchData;
     private int ownerId;
     private int guestsId;
@@ -13,6 +13,15 @@ public class Match implements Identified<Integer> {
     private int guestsScore;
     private int nextMatchId;
     private String status;
+
+
+    public String getStage() {
+        return stage;
+    }
+
+    public void setStage(String stage) {
+        this.stage = stage;
+    }
 
     public Integer getId() {
 
