@@ -6,7 +6,6 @@ var matchesTable;
 var seasonSelector;
 var tournamentSelector;
 var tbody;
-
 function init() {
     tournamentSelector = document.getElementById("tournaments-selector");
     seasonSelector = document.getElementById("season-selector");
@@ -14,15 +13,34 @@ function init() {
     tbody = document.getElementById("tbody_id");
 }
 
-function callback() {
+function callback(removeId) {
     if (req.readyState == 4) {
-        if (req.status == 200) {
-            clearTable();
-            parseMessages(req.responseText);
-        }else if (req.status == 555){
-            clearTable();
-            alert("you wanna delete cascade next match?");
-            parseMessages(req.responseText);
+        clearTable();
+        switch (req.status){
+            case 200: //без ошибок. Выводим измененую таблицу
+                parseMessages(req.responseText);
+                break;
+            case 555: //подтверждение каскадного удаления
+                document.getElementById("textInfo").innerText="Candidate for delete:";
+                parseMessages(req.responseText);
+                if(confirm("Do you wanna delete they? Да?")){
+                    cascadeDelete(removeId);
+                } else{
+                    showTable();
+                }
+                document.getElementById("textInfo").innerText="All matches:";
+                break;
+            case 444: //удаление не выполнено, такой матч не найден. Возможно его только что кто-то удалил
+                alert("Operation not executed: match id = null");
+                parseMessages(req.responseText);
+                break;
+            case 445: //добавление не удалось
+                alert("Adding failed!");
+                parseMessages(req.responseText);
+                break;
+            case 446: //не выполнена ни одна операция
+                alert("Nothing has been done!");
+                parseMessages(req.responseText);
         }
     }
 }
@@ -136,6 +154,14 @@ function removeMatch(element) {
     if (element.id != null) {
         var url = "matches?type=removeMatch" +
             "&matchId=" + element.id;
+        removeAction(url,element.id);
+    }
+}
+
+function cascadeDelete(matchId){
+    if (matchId != null) {
+        var url = "matches?type=cascadeRemove" +
+            "&matchId=" + matchId;
         action(url);
     }
 }
@@ -145,6 +171,20 @@ function checkFields() {
     return true;
 }
 
+function removeAction(url, removeId) {
+// Формируем адрес с параметрами
+// Создаем объект запроса
+    req = new XMLHttpRequest();
+
+// Указываем метод, адрес и асинхронность
+    req.open("GET", url, true);
+
+// Указываем функцию для обратного вызова
+    req.onreadystatechange = callback(removeId);
+
+// Отправляем запрос
+    req.send(null);
+}
 function action(url) {
 // Формируем адрес с параметрами
 // Создаем объект запроса
@@ -154,11 +194,15 @@ function action(url) {
     req.open("GET", url, true);
 
 // Указываем функцию для обратного вызова
-    req.onreadystatechange = callback;
+    req.onreadystatechange = callback(null);
 
 // Отправляем запрос
     req.send(null);
 }
+
+
+//Ajax
+
 //function sendToServ() {
 //    $.ajax({
 //        type: "POST",
@@ -173,7 +217,6 @@ function action(url) {
 //    })
 //    ;
 //}
-
 
 //function sendToServ2() {
 //
