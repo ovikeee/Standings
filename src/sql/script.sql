@@ -20,15 +20,15 @@ create table tournament(
 );
 
 create table matches(
-  match_id serial PRIMARY KEY ,
+  id serial PRIMARY KEY ,
   stage varchar(10),
-  tournament_id integer NOT NULL ,
+  tournament_id integer NOT NULL REFERENCES tournament(id) ON DELETE CASCADE,
   match_data Timestamptz NOT NULL ,
-  owner_id integer REFERENCES teams(id),
-  guests_id integer REFERENCES teams(id),
+  owner_id integer REFERENCES teams(id) ON DELETE CASCADE,
+  guests_id integer REFERENCES teams(id) ON DELETE CASCADE,
   owner_id_score integer ,
   guests_id_score integer ,
-  next_match_id integer REFERENCES matches(match_id),
+  next_match_id integer REFERENCES matches(id) ON DELETE CASCADE,
   status varchar(20) DEFAULT ('is not played'),
   CHECK(owner_id!=guests_id)
 );
@@ -70,12 +70,24 @@ insert into teams(id, title) values(15,'Kuban Krasnodar');
 insert into teams(id, title) values(16,'Mordovya Saransk');
 
 
-insert into matches(match_id, tournament_id, match_data) values(1, 9, '2015-09-10');
-insert into matches(match_id, tournament_id, match_data, next_match_id) values(2, 9, '2015-09-05 10:23:00', 1);
-insert into matches(match_id, tournament_id, match_data, next_match_id) values(3, 9, '2015-09-05 10:30:54', 1);
-insert into matches(match_id, tournament_id, match_data, next_match_id) values(4, 9, '2015-09-02 14:23:54', 2);
-insert into matches(match_id, tournament_id, match_data, next_match_id) values(5, 9, '2015-09-02 20:23:54', 2);
-insert into matches(match_id, tournament_id, match_data, next_match_id) values(6, 9, '2015-09-01 20:23:54', 3);
-insert into matches(match_id, tournament_id, match_data, next_match_id) values(7, 9, '2015-08-31 11:23:54', 3);
-insert into matches values(8, '1/2',9, '2015-08-31 11:23:54', 1,2,2,3,5,'is not played');
-insert into matches values(9, '1/4',9, '2015-08-31 11:23:54', 2,10,2,1,7,'is not played');
+insert into matches( tournament_id, match_data) values(9, '2015-09-10');
+insert into matches( tournament_id, match_data, next_match_id) values( 9, '2015-09-05 10:23:00', 1);
+insert into matches( tournament_id, match_data, next_match_id) values( 9, '2015-09-05 10:30:54', 1);
+insert into matches( tournament_id, match_data, next_match_id) values( 9, '2015-09-02 14:23:54', 2);
+insert into matches( tournament_id, match_data, next_match_id) values( 9, '2015-09-02 20:23:54', 2);
+insert into matches( tournament_id, match_data, next_match_id) values( 9, '2015-09-01 20:23:54', 3);
+insert into matches( tournament_id, match_data, next_match_id) values( 9, '2015-08-31 11:23:54', 3);
+insert into matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score,next_match_id, status) values( '1/2',9, '2015-08-31 11:23:54', 1,2,2,3,5,'is not played');
+insert into  matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score,next_match_id, status) values( '1/4',9, '2015-08-31 11:23:54', 2,10,2,1,7,'is not played');
+insert into  matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score,next_match_id, status) values( '1/4',9, '2015-08-31 11:23:54', 2,10,2,1,7,'is not played') ;
+
+insert into matches( tournament_id, match_data) values(5, '2015-05-10');
+insert into matches( tournament_id, match_data, next_match_id) values( 5, '2015-05-05 10:23:00', 11);
+insert into matches( tournament_id, match_data, next_match_id) values( 5, '2015-05-05 10:30:54', 11);
+insert into matches( tournament_id, match_data, next_match_id) values( 5, '2015-05-02 14:23:54', 12);
+insert into matches( tournament_id, match_data, next_match_id) values( 5, '2015-05-02 20:23:54', 12);
+insert into matches( tournament_id, match_data, next_match_id) values( 5, '2015-05-01 20:23:54', 13);
+insert into matches( tournament_id, match_data, next_match_id) values( 5, '2015-08-31 11:23:54', 13);
+insert into matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score,next_match_id, status) values( '1/2',5, '2015-08-31 11:23:54', 1,2,2,3,15,'is not played');
+insert into  matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score,next_match_id, status) values( '1/4',5, '2015-08-31 11:23:54', 2,10,2,1,17,'is not played');
+insert into  matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score,next_match_id, status) values( '1/4',5, '2015-08-31 11:23:54', 2,10,2,1,17,'is not played') ;

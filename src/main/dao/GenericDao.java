@@ -24,10 +24,19 @@ public interface GenericDao<T extends Identified<PK>, PK extends Serializable> {
     /** Сохраняет состояние объекта group в базе данных */
     public void update(T object) throws PersistException;
 
+    public T copy(PK key) throws PersistException ;
+
     /** Удаляет запись об объекте из базы данных */
     public void delete(T object) throws PersistException;
 
     /** Возвращает список объектов соответствующих всем записям в базе данных */
     public List<T> getAll() throws PersistException;
 
+    /**Возвращает список объектов соответстующий введеному параметру запроса и его значению */
+    public List<T> findByIntParam(String param, Object value) throws PersistException;
+
+    /**Возвращает список объектов соответстующий введеному параметру запроса и его значению */
+    public List<T> findByStringParam(String param, Object value) throws PersistException;
+
+    public List<T> findByDateParam(String param, Object value) throws PersistException;
 }

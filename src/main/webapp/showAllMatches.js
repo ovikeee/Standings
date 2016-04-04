@@ -6,40 +6,48 @@ var matchesTable;
 var seasonSelector;
 var tournamentSelector;
 var tbody;
-function init() {
+var removeId;
+var selectedMatch;
+function start() {
     tournamentSelector = document.getElementById("tournaments-selector");
     seasonSelector = document.getElementById("season-selector");
     matchesTable = document.getElementById("matches-table");
     tbody = document.getElementById("tbody_id");
+    showTable();
 }
 
-function callback(removeId) {
+
+function callback() {
     if (req.readyState == 4) {
         clearTable();
-        switch (req.status){
-            case 200: //без ошибок. Выводим измененую таблицу
+        switch (req.status) {
+            case 200: //Р±РµР· РѕС€РёР±РѕРє. Р’С‹РІРѕРґРёРј РёР·РјРµРЅРµРЅСѓСЋ С‚Р°Р±Р»РёС†Сѓ
                 parseMessages(req.responseText);
                 break;
-            case 555: //подтверждение каскадного удаления
-                document.getElementById("textInfo").innerText="Candidate for delete:";
+            case 555: //РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ РєР°СЃРєР°РґРЅРѕРіРѕ СѓРґР°Р»РµРЅРёСЏ
+                document.getElementById("textInfo").innerText = "РџСЂРµС‚РµРЅРґРµРЅС‚С‹ РЅР° СѓРґР°Р»РµРёРµ:";
                 parseMessages(req.responseText);
-                if(confirm("Do you wanna delete they? Да?")){
+                if (confirm("РџСЂРё СѓРґР°Р»РµРЅРёРё РІС‹Р±СЂР°РЅРЅРѕРіРѕ РјР°С‚С‡Р° СѓРґР°Р»СЏС‚СЃСЏ Рё РїСЂРёРІРµРґРµРЅРЅС‹Рµ РЅРёР¶Рµ РјР°С‚С‡Рё. РҐРѕС‚РёС‚Рµ Р»Рё Р’С‹ РёС… СѓРґР°Р»РёС‚СЊ?")) {
                     cascadeDelete(removeId);
-                } else{
+                } else {
                     showTable();
                 }
-                document.getElementById("textInfo").innerText="All matches:";
+                document.getElementById("textInfo").innerText = "Р’СЃРµ РјР°С‚С‡Рё:";
                 break;
-            case 444: //удаление не выполнено, такой матч не найден. Возможно его только что кто-то удалил
-                alert("Operation not executed: match id = null");
+            case 444: //СѓРґР°Р»РµРЅРёРµ РЅРµ РІС‹РїРѕР»РЅРµРЅРѕ, С‚Р°РєРѕР№ РјР°С‚С‡ РЅРµ РЅР°Р№РґРµРЅ. Р’РѕР·РјРѕР¶РЅРѕ РµРіРѕ С‚РѕР»СЊРєРѕ С‡С‚Рѕ РєС‚Рѕ-С‚Рѕ СѓРґР°Р»РёР»
+                alert("РЈРґР°Р»РµРЅРёРµ РЅРµ РІС‹РїРѕР»РЅРµРЅРѕ! ");
                 parseMessages(req.responseText);
                 break;
-            case 445: //добавление не удалось
-                alert("Adding failed!");
+            case 445: //РґРѕР±Р°РІР»РµРЅРёРµ РЅРµ СѓРґР°Р»РѕСЃСЊ
+                alert("Р”РѕР±Р°РІР»РµРЅРёРµ РЅРµ РІС‹РїРѕР»РЅРµРЅРѕ!");
                 parseMessages(req.responseText);
                 break;
-            case 446: //не выполнена ни одна операция
-                alert("Nothing has been done!");
+            case 446://РёР·РјРµРЅРµРЅРёРµ РЅРµ РїСЂРѕРёР·РІРµРґРµРЅРѕ
+                alert("РР·РјРµРЅРµРЅРёРµ РЅРµ РІС‹РїРѕР»РЅРµРЅРѕ!");
+                parseMessages(req.responseText);
+                break;
+            case 490: //РЅРµ РІС‹РїРѕР»РЅРµРЅР° РЅРё РѕРґРЅР° РѕРїРµСЂР°С†РёСЏ
+                alert("Р—Р°РїСЂРѕСЃ Рє СЃРµСЂРІРµСЂСѓ РЅРµ РІС‹РїРѕР»РЅРёР» РЅРёРєР°РєРёС… РґРµР№СЃС‚РІРёР№!");
                 parseMessages(req.responseText);
         }
     }
@@ -79,7 +87,7 @@ function appendWeight(match_id, stage, tournament_id, data, owner, guests, resul
     var ref;
 
     row = document.createElement("tr");
-
+    row.setAttribute("onClick", "selectRow(this)");
     cell = document.createElement("td");
     cell.textContent = match_id;
     row.appendChild(cell);
@@ -119,7 +127,7 @@ function appendWeight(match_id, stage, tournament_id, data, owner, guests, resul
     cell = document.createElement("td");
     ref = document.createElement("a");
     ref.textContent = "X";
-   // ref.setAttribute("href", "")
+    // ref.setAttribute("href", "")
     ref.setAttribute("id", match_id)
     ref.setAttribute("onClick", "removeMatch(this)")
     cell.appendChild(ref);
@@ -129,13 +137,18 @@ function appendWeight(match_id, stage, tournament_id, data, owner, guests, resul
     tbody.appendChild(row);
 }
 
-
 function showTable() {
     var url = "matches?type=showAllMatches";
     action(url);
 }
 
 function addMatch() {
+    var tournament = document.getElementById("tournamentId");
+    /*    if(tournament.classList.contains("active")){
+     tournament.classList.remove("active");
+     };
+     $('div').removeClass("clName1 clName2")
+     */
     if (checkFields()) {
         var url = "matches?type=addMatch" +
             "&tournamentId=" + document.getElementById("tournamentId").value +
@@ -150,56 +163,113 @@ function addMatch() {
     }
 }
 
-function removeMatch(element) {
-    if (element.id != null) {
-        var url = "matches?type=removeMatch" +
-            "&matchId=" + element.id;
-        removeAction(url,element.id);
-    }
-}
-
-function cascadeDelete(matchId){
-    if (matchId != null) {
-        var url = "matches?type=cascadeRemove" +
-            "&matchId=" + matchId;
+function editMatch() {
+    var tournament = document.getElementById("tournamentId");
+    /*    if(tournament.classList.contains("active")){
+     tournament.classList.remove("active");
+     };
+     $('div').removeClass("clName1 clName2")
+     */
+    if (checkFields()) {
+        var url = "matches?type=editMatch" +
+            "&matchId=" + document.getElementById("match_id").value +
+            "&tournamentId=" + document.getElementById("tournamentId").value +
+            "&stageId=" + document.getElementById("stageId").options[document.getElementById("stageId").options.selectedIndex].text +
+            "&dateId=" + document.getElementById("dateId").options[document.getElementById("dateId").options.selectedIndex].text +
+            "&ownerId=" + document.getElementById("ownerId").options[document.getElementById("ownerId").options.selectedIndex].text +
+            "&guestsId=" + document.getElementById("guestsId").options[document.getElementById("guestsId").options.selectedIndex].text +
+            "&scoreId=" + document.getElementById("scoreId").value +
+            "&next_matchId=" + document.getElementById("next_matchId").value +
+            "&statusId=" + document.getElementById("statusId").options[document.getElementById("statusId").options.selectedIndex].text
         action(url);
     }
 }
 
+function searchBy() {
+    var url = "matches?type=find" +
+        "&findType=" + document.getElementById("param").options[document.getElementById("param").options.selectedIndex].value +
+        "&value=" + document.getElementById("findField").value;
+    action(url);
+
+}
+
+function removeMatch(element) {
+    if (confirm("Р’С‹ СѓРІРµСЂРµРЅС‹, С‡С‚Рѕ С…РѕС‚РёС‚Рµ СѓРґР°Р»РёС‚СЊ СЌС‚Сѓ Р·Р°РїРёСЃСЊ?")) {
+        if (element.id != null) {
+            removeId = element.id;
+            var url = "matches?type=removeMatch" +
+                "&matchId=" + removeId;
+            action(url);
+        }
+    }
+}
+
+function cascadeDelete() {
+    var url = "matches?type=cascadeRemove" +
+        "&matchId=" + removeId;
+    action(url);
+
+}
+
 function checkFields() {
-    //проверка обязательных полей ввода
-    return true;
+    //РїСЂРѕРІРµСЂРєР° РѕР±СЏР·Р°С‚РµР»СЊРЅС‹С… РїРѕР»РµР№ РІРІРѕРґР°
+    var touenId = document.getElementById("tournamentId");
+
+    if (($.isNumeric(touenId.value)) && (touenId.value / Math.floor(touenId.value) == 1)) {
+        //Р¦РµР»РѕРµ С‡РёСЃР»Рѕ
+        return true;
+    } else {
+        //РЅРµ С†РµР»РѕРµ С‡РёСЃР»Рѕ
+        //РІС‹РґРµР»СЏРµРј СЏС‡РµР№РєСѓ
+        //touenId.addClass("active");
+        //$('#tournamentId').parent().addClass("active");
+        alert("Р’РІРµРґРёС‚Рµ С†РµР»РѕРµ С‡РёСЃР»Рѕ РІ РїРѕР»Рµ tournamentId");
+        return false;
+    }
 }
 
-function removeAction(url, removeId) {
-// Формируем адрес с параметрами
-// Создаем объект запроса
-    req = new XMLHttpRequest();
-
-// Указываем метод, адрес и асинхронность
-    req.open("GET", url, true);
-
-// Указываем функцию для обратного вызова
-    req.onreadystatechange = callback(removeId);
-
-// Отправляем запрос
-    req.send(null);
-}
 function action(url) {
-// Формируем адрес с параметрами
-// Создаем объект запроса
+// Р¤РѕСЂРјРёСЂСѓРµРј Р°РґСЂРµСЃ СЃ РїР°СЂР°РјРµС‚СЂР°РјРё
+// РЎРѕР·РґР°РµРј РѕР±СЉРµРєС‚ Р·Р°РїСЂРѕСЃР°
     req = new XMLHttpRequest();
 
-// Указываем метод, адрес и асинхронность
+// РЈРєР°Р·С‹РІР°РµРј РјРµС‚РѕРґ, Р°РґСЂРµСЃ Рё Р°СЃРёРЅС…СЂРѕРЅРЅРѕСЃС‚СЊ
     req.open("GET", url, true);
 
-// Указываем функцию для обратного вызова
-    req.onreadystatechange = callback(null);
+// РЈРєР°Р·С‹РІР°РµРј С„СѓРЅРєС†РёСЋ РґР»СЏ РѕР±СЂР°С‚РЅРѕРіРѕ РІС‹Р·РѕРІР°
+    req.onreadystatechange = callback;
 
-// Отправляем запрос
+// РћС‚РїСЂР°РІР»СЏРµРј Р·Р°РїСЂРѕСЃ
     req.send(null);
 }
 
+function selectRow(row) {
+    $(".active").removeClass();
+    $(row).addClass("active");
+    selectedMatch=row;
+    /*    if(tournament.classList.contains("active")){
+     tournament.classList.remove("active");
+     };
+     $('div').removeClass("clName1 clName2")
+     */
+    //"&tournamentId=" + document.getElementById("tournamentId").value =  +
+    //"&stageId=" + document.getElementById("stageId").options[document.getElementById("stageId").options.selectedIndex].text +
+    //"&dateId=" + document.getElementById("dateId").options[document.getElementById("dateId").options.selectedIndex].text +
+    //"&ownerId=" + document.getElementById("ownerId").options[document.getElementById("ownerId").options.selectedIndex].text +
+    //"&guestsId=" + document.getElementById("guestsId").options[document.getElementById("guestsId").options.selectedIndex].text +
+    //"&scoreId=" + document.getElementById("scoreId").value +
+    //"&next_matchId=" + document.getElementById("next_matchId").value +
+    //"&statusId=" + document.getElementById("statusId").options[document.getElementById("statusId").options.selectedIndex].text
+
+}
+
+
+function copyMatch() {
+   // alert(selectedMatch.getElementsByTagName("td")[0].innerHTML);
+    var url = "matches?type=copyMatch" +
+        "&matchId="+selectedMatch.getElementsByTagName("td")[0].innerHTML;
+    action(url);
+}
 
 //Ajax
 
@@ -223,8 +293,8 @@ function action(url) {
 //    req = new XMLHttpRequest();
 //
 //    var json = JSON.stringify({
-//        name: "Виктор",
-//        surname: "Цой"
+//        name: "Р’РёРєС‚РѕСЂ",
+//        surname: "Р¦РѕР№"
 //    });
 //
 //    req.open("POST", 'matches', true)
@@ -232,8 +302,8 @@ function action(url) {
 //
 //    req.onreadystatechange = callback;
 //
-//// Отсылаем объект в формате JSON и с Content-Type application/json
-//// Сервер должен уметь такой Content-Type принимать и раскодировать
+//// РћС‚СЃС‹Р»Р°РµРј РѕР±СЉРµРєС‚ РІ С„РѕСЂРјР°С‚Рµ JSON Рё СЃ Content-Type application/json
+//// РЎРµСЂРІРµСЂ РґРѕР»Р¶РµРЅ СѓРјРµС‚СЊ С‚Р°РєРѕР№ Content-Type РїСЂРёРЅРёРјР°С‚СЊ Рё СЂР°СЃРєРѕРґРёСЂРѕРІР°С‚СЊ
 //    req.send(json);
 //}
 

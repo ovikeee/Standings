@@ -75,7 +75,6 @@
         </tr>
         </tbody>
     </table>
-    <p>&nbsp;</p>
 </form>
 </body>
 </html>
