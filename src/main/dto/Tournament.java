@@ -3,9 +3,8 @@
  */
 public class Tournament implements Identified<Integer> {
     private Integer id=null;
-    private  String title;
-    private int numberOfTeams;
-    private String season;
+    private String title;
+    private Integer numberOfTeams;
 
     public Integer getId() {
         return id;
@@ -23,19 +22,11 @@ public class Tournament implements Identified<Integer> {
         this.title = title;
     }
 
-    public int getNumberOfTeams() {
+    public Integer getNumberOfTeams() {
         return numberOfTeams;
     }
 
-    public void setNumberOfTeams(int numberOfTeams) {
+    public void setNumberOfTeams(Integer numberOfTeams) {
         this.numberOfTeams = numberOfTeams;
-    }
-
-    public String getSeason() {
-        return season;
-    }
-
-    public void setSeason(String season) {
-        this.season = season;
     }
 }

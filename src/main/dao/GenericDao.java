@@ -1,42 +1,43 @@
 
 import java.io.Serializable;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
 
 /**
  * DAO
- * Унифицированный интерфейс управления персистентным состоянием объектов
- * @param <T> тип объекта персистенции
- * @param <PK> тип первичного ключа
+ * РЈРЅРёС„РёС†РёСЂРѕРІР°РЅРЅС‹Р№ РёРЅС‚РµСЂС„РµР№СЃ СѓРїСЂР°РІР»РµРЅРёСЏ РїРµСЂСЃРёСЃС‚РµРЅС‚РЅС‹Рј СЃРѕСЃС‚РѕСЏРЅРёРµРј РѕР±СЉРµРєС‚РѕРІ
+ * @param <T> С‚РёРї РѕР±СЉРµРєС‚Р° РїРµСЂСЃРёСЃС‚РµРЅС†РёРё
+ * @param <PK> С‚РёРї РїРµСЂРІРёС‡РЅРѕРіРѕ РєР»СЋС‡Р°
  */
 
 public interface GenericDao<T extends Identified<PK>, PK extends Serializable> {
 
-    /** Создает новую запись и соответствующий ей объект */
+    /** РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ Р·Р°РїРёСЃСЊ Рё СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ РµР№ РѕР±СЉРµРєС‚ */
     public T create() throws PersistException;
 
-    /** Создает новую запись, соответствующую объекту object */
+    /** РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ Р·Р°РїРёСЃСЊ, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰СѓСЋ РѕР±СЉРµРєС‚Сѓ object */
     public T persist(T object)  throws PersistException;
 
-    /** Возвращает объект соответствующий записи с первичным ключом key или null */
+    /** Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕР±СЉРµРєС‚ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ Р·Р°РїРёСЃРё СЃ РїРµСЂРІРёС‡РЅС‹Рј РєР»СЋС‡РѕРј key РёР»Рё null */
     public T getByPK(PK key) throws PersistException;
 
-    /** Сохраняет состояние объекта group в базе данных */
+    /** РЎРѕС…СЂР°РЅСЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РѕР±СЉРµРєС‚Р° group РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С… */
     public void update(T object) throws PersistException;
 
     public T copy(PK key) throws PersistException ;
 
-    /** Удаляет запись об объекте из базы данных */
+    /** РЈРґР°Р»СЏРµС‚ Р·Р°РїРёСЃСЊ РѕР± РѕР±СЉРµРєС‚Рµ РёР· Р±Р°Р·С‹ РґР°РЅРЅС‹С… */
     public void delete(T object) throws PersistException;
 
-    /** Возвращает список объектов соответствующих всем записям в базе данных */
+    /** Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РѕР±СЉРµРєС‚РѕРІ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёС… РІСЃРµРј Р·Р°РїРёСЃСЏРј РІ Р±Р°Р·Рµ РґР°РЅРЅС‹С… */
     public List<T> getAll() throws PersistException;
 
-    /**Возвращает список объектов соответстующий введеному параметру запроса и его значению */
-    public List<T> findByIntParam(String param, Object value) throws PersistException;
+    /**Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РѕР±СЉРµРєС‚РѕРІ СЃРѕРѕС‚РІРµС‚СЃС‚СѓСЋС‰РёР№ РІРІРµРґРµРЅРѕРјСѓ РїР°СЂР°РјРµС‚СЂСѓ Р·Р°РїСЂРѕСЃР° Рё РµРіРѕ Р·РЅР°С‡РµРЅРёСЋ */
+    public List<T> findByIntParam(String param, int value) throws PersistException;
 
-    /**Возвращает список объектов соответстующий введеному параметру запроса и его значению */
-    public List<T> findByStringParam(String param, Object value) throws PersistException;
+    /**Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РѕР±СЉРµРєС‚РѕРІ СЃРѕРѕС‚РІРµС‚СЃС‚СѓСЋС‰РёР№ РІРІРµРґРµРЅРѕРјСѓ РїР°СЂР°РјРµС‚СЂСѓ Р·Р°РїСЂРѕСЃР° Рё РµРіРѕ Р·РЅР°С‡РµРЅРёСЋ */
+    public List<T> findByStringParam(String param, String value) throws PersistException;
 
-    public List<T> findByDateParam(String param, Object value) throws PersistException;
+    public List<T> findByDateParam(String param, Date value) throws PersistException;
 }

@@ -5,10 +5,10 @@
     <script type="text/javascript" src="showAllTeams.js"></script>
 </head>
 <body onload="init()">
-<p><input name="results" onclick="location.href='index.jsp';" type="button" value="Результаты">&nbsp;<input
-        name="tournaments" onclick="location.href='tournament_editor.jsp';" type="button" value="Турниры">&nbsp;<input
-        name="teams" onclick="location.href='team_editor.jsp';" type="button" value="Команды">&nbsp;<input
-        name="matches" onclick="location.href='match_editor.jsp';" type="button" value="Матчи"></p>
+<p><input class="button" name="results" onclick="location.href='index.jsp';" type="button" value="Результаты">&nbsp;<input
+        class="button" name="tournaments" onclick="location.href='tournament_editor.jsp';" type="button" value="Турниры">&nbsp;<input
+        class="button" name="teams" onclick="location.href='team_editor.jsp';" type="button" value="Команды">&nbsp;<input
+        class="button" name="matches" onclick="location.href='match_editor.jsp';" type="button" value="Матчи"></p>
 <p align="center">РЕДАКТОР КОМАНД</p>
 <table align="center" border="1" cellpadding="0" cellspacing="0" style="width: 50px">
     <tbody>

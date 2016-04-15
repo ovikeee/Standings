@@ -10,29 +10,35 @@
 </head>
 <body onload="start()">
 <form>
-    <p><input name="results" onclick="location.href='index.jsp';" type="button" value="Результаты">&nbsp;<input name="tournaments" onclick="location.href='tournament_editor.jsp';" type="button" value="Турниры">&nbsp;<input name="teams" onclick="location.href='team_editor.jsp';" type="button" value="Команды">&nbsp;<input name="matches" onclick="location.href='match_editor.jsp';" type="button" value="Матчи"></p>
+    <p><input class="button" name="results" onclick="location.href='index.jsp';" type="button"
+              value="Результаты">&nbsp;<input
+            class="button" name="tournaments" onclick="location.href='tournament_editor.jsp';" type="button"
+            value="Турниры">&nbsp;<input
+            class="button" name="teams" onclick="location.href='team_editor.jsp';" type="button"
+            value="Команды">&nbsp;<input
+            class="button" name="matches" onclick="location.href='match_editor.jsp';" type="button" value="Матчи"></p>
     <table align="center" border="1" cellpadding="0" cellspacing="0" class="clickable" style="width: 700px">
         <caption>Заполните обязательные поля и добавьте матч.<br>
             &nbsp;</caption>
         <thead>
         <tr>
             <th bordercolor="red" scope="col">id матча</th>
-            <th scope="col">id турнира *</th>
-            <th scope="col">стадия турнира</th>
+            <th scope="col">турнир *</th>
+            <th id = "selectStageOfTournament" scope="col">стадия турнира</th>
             <th scope="col">дата матча *</th>
-            <th scope="col">хозяева</th>
-            <th scope="col">гости</th>
+            <th id = "selectOwner" scope="col">хозяева</th>
+            <th id = "selectGuests" scope="col">гости</th>
             <th scope="col">
                 <p>счёт</p>
             </th>
-            <th scope="col">следующий матч</th>
-            <th scope="col">статус игры</th>
+            <th id = "selectNextMatch" scope="col">следующий матч</th>
+            <th  scope="col">статус игры</th>
         </tr>
         </thead>
         <tbody>
         <tr>
             <td><input id="match_id" name="match_id" size="3" type="text"></td>
-            <td><input id="tournamentId" name="tournament_id" size="4" type="text"></td>
+            <td><select id="tournamentId" name="tournament_id"></select></td>
             <td><select id="stageId" name="stage"><option value="1">финал</option><option value="2">1/2</option><option value="4">1/4</option><option value="8">1/8</option></select></td>
             <td><select id="dateId" name="date"><option value="1">02-04-2014 23:37:50</option><option value="2">02-04-2014 23:37:50</option></select></td>
             <td><select id="ownerId" name="owner"><option value="1">Анжи</option><option value="2">2</option><option value="3">3</option><option value="4">Спартак</option><option selected="selected" value="0"></option></select></td>
@@ -46,13 +52,28 @@
     <p align="center"><input name="add" onclick="addMatch()" type="button" value="Добавить матч"> <input name="edit" onclick="editMatch()" type="button" value="Изменить">&nbsp;<input name="copy" id="copy" onclick="copyMatch()" type="button" value="Копировать"></p>
     <p align="center"><input name="show_matches" onclick="showTable()" type="button" value="Показать все матчи"></p>
     <p align="center" id="textInfo">Список всех матчей</p>
-    <table align="center" border="1" cellpadding="0" cellspacing="0" style="width: 700px">
-        <caption><input id="findField" maxlength="24" name="findField" size="25" type="text"> <select id="param" name="param"><option value="id">по id матча</option><option value="stage">по стадии</option><option value="match_data">по дате</option><option value="owner_id">по id хозяев</option><option value="guests_id">по id гостей</option><option value="status">по статусу матча</option><option selected="selected" value="tournament_id">по id турнира</option></select> <input name="find" onclick="searchBy()" type="button" value="Найти"></caption>
+    <table align="center" border="1" cellpadding="0" cellspacing="0" >
+        <!--
+        <caption><input id="findField" maxlength="24" name="findField" size="25" type="text"> <select id="param" name="param"><option value="id">по id матча</option><option value="stage">по стадии</option><option value="match_data">по дате</option><option value="owner_id">по id хозяев</option><option value="owner_title">по названию хозяев</option><option value="guests_id">по id гостей</option><option value="status">по статусу матча</option><option selected="selected" value="tournament_id">по id турнира</option></select> <input name="find" onclick="searchBy()" type="button" value="Найти"></caption>
+        -->
+        <caption><input id="findField" maxlength="24" name="findField" size="25" type="text">
+            <select id="param" name="param">
+            <option value="stage">по стадии</option>
+            <option value="match_data">по дате</option>
+            <option value="team_title">по названию команды</option>
+            <option value="status">по статусу матча</option>
+            <option selected="selected" value="tournament_title">по названию турнира</option>
+                <option value="id">по id матча</option>
+                <option value="owner_id">по id хозяев</option>
+                <option value="guests_id">по id гостей</option>
+                <option value="tournament_id">по id турнира</option>
+        </select>
+            <input name="find" onclick="searchBy()" type="button" value="Найти"></caption>
         <thead>
         <tr>
             <th scope="col">id матча</th>
             <th scope="col">стадия турнира</th>
-            <th scope="col">id турнира</th>
+            <th scope="col">турнир</th>
             <th scope="col">дата матча</th>
             <th scope="col">хозяева</th>
             <th scope="col">гости</th>

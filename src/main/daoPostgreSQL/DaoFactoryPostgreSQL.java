@@ -13,14 +13,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Реализация DaoFactory для СУБД PostgreSQL.
+ * Р РµР°Р»РёР·Р°С†РёСЏ DaoFactory РґР»СЏ РЎРЈР‘Р” PostgreSQL.
  *
  * */
 public class DaoFactoryPostgreSQL implements DaoFactory<Connection> {
 
     private String jndi = "java:jboss/datasources/PostgreDataSource";//JNDI
-    private Map<Class, DaoCreator> creators; //Map с ключом типа Class, возвращающий новые экземпляры соответствующие ключу дао объектов
-    private Connection connection = null; //соединение к БД
+    private Map<Class, DaoCreator> creators; //Map СЃ РєР»СЋС‡РѕРј С‚РёРїР° Class, РІРѕР·РІСЂР°С‰Р°СЋС‰РёР№ РЅРѕРІС‹Рµ СЌРєР·РµРјРїР»СЏСЂС‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРµ РєР»СЋС‡Сѓ РґР°Рѕ РѕР±СЉРµРєС‚РѕРІ
+    private Connection connection = null; //СЃРѕРµРґРёРЅРµРЅРёРµ Рє Р‘Р”
 
     @Override
     public Connection getContext() throws PersistException {
@@ -28,7 +28,7 @@ public class DaoFactoryPostgreSQL implements DaoFactory<Connection> {
     }
 
     /**
-     * Возвращает DAO объект, для соответствующего класса
+     * Р’РѕР·РІСЂР°С‰Р°РµС‚ DAO РѕР±СЉРµРєС‚, РґР»СЏ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРіРѕ РєР»Р°СЃСЃР°
      * */
     @Override
     public GenericDao getDao(Class dtoClass) throws PersistException {
@@ -41,11 +41,11 @@ public class DaoFactoryPostgreSQL implements DaoFactory<Connection> {
 
     public DaoFactoryPostgreSQL() {
         try {
-        //создание подключения
+        //СЃРѕР·РґР°РЅРёРµ РїРѕРґРєР»СЋС‡РµРЅРёСЏ
         InitialContext ic = new InitialContext();
         DataSource ds = (DataSource) ic.lookup(jndi);
         connection = ds.getConnection();
-        //инициализация карты
+        //РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєР°СЂС‚С‹
         creators = new HashMap<Class, DaoCreator>();
         creators.put(Match.class, new DaoCreator<Connection>() {
             @Override

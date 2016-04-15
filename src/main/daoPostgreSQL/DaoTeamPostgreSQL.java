@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Created by User on 19.03.2016.
  */
-public class DaoTeamPostgreSQL extends AbstractDao<Team, Integer> {
+public class DaoTeamPostgreSQL extends AbstractDAO<Team, Integer> {
 
     private class PersistTeam extends Team {
         public void setId(int id) {
@@ -23,19 +23,19 @@ public class DaoTeamPostgreSQL extends AbstractDao<Team, Integer> {
 
     @Override
     public String getInsertQuery() {
-        return "insert into teams (title) values(?);";
+        return "insert into teams (title) values(?)";
     }
 
     @Override
     public String getUpdateQuery() {
         return "UPDATE teams SET" +
-                " title ?" +
-                " WHERE id= ?;";
+                " title= ?" +
+                " WHERE id= ?";
     }
 
     @Override
     public String getDeleteQuery() {
-        return "DELETE FROM teams WHERE id= ?;";
+        return "DELETE FROM teams WHERE id= ?";
     }
 
     @Override

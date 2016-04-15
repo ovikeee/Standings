@@ -6,10 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Управление таблицой matches в БД
- * CRUD операции, получение объектного представления объектов БД.
+ * РЈРїСЂР°РІР»РµРЅРёРµ С‚Р°Р±Р»РёС†РѕР№ matches РІ Р‘Р”
+ * CRUD РѕРїРµСЂР°С†РёРё, РїРѕР»СѓС‡РµРЅРёРµ РѕР±СЉРµРєС‚РЅРѕРіРѕ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёСЏ РѕР±СЉРµРєС‚РѕРІ Р‘Р”.
  */
-public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
+public class DaoMatchPostgreSQL extends AbstractDAO<Match, Integer> {
 
     private class PersistMatch extends Match {
         public void setId(int id) {
@@ -35,23 +35,25 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
     }
 
     /**
-     * находит матчи у которых поле nextMatch равен введеному id
-     * возвращает список типа Match
+     * РЅР°С…РѕРґРёС‚ РјР°С‚С‡Рё Сѓ РєРѕС‚РѕСЂС‹С… РїРѕР»Рµ nextMatch СЂР°РІРµРЅ РІРІРµРґРµРЅРѕРјСѓ id
+     * РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє С‚РёРїР° Match
      */
-    public List<Match> getPreviousMatches(int id) {
-        List<Match> list = null;
-        String sql = "SELECT id FROM matches WHERE next_match_id=?;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, id);
-            ResultSet rs = statement.executeQuery();
-            if (rs != null) {
-                list = parseResultSet(rs);
-            }
-        } catch (Exception e) {
-            // throw new PersistException(e);
-        }
-        return list;
-    }
+//    public List<Match> getMatchWithTeam(int id) {
+//        List<Match> list = null;
+//        String sql = "SELECT id FROM matches WHERE next_match_id=?;";
+//        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+//            statement.setInt(1, id);
+//            ResultSet rs = statement.executeQuery();
+//            if (rs != null) {
+//                list = parseResultSet(rs);
+//            }
+//        } catch (Exception e) {
+//            // throw new PersistException(e);
+//        }
+//        return list;
+//    }
+//
+
 
     @Override
     public String getSelectQuery() {
@@ -61,7 +63,7 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
     @Override
     public String getInsertQuery() {
         return "insert into matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score," +
-                " next_match_id, status ) values(?,?,?,?,?,?,?,?,?);";
+                " next_match_id, status ) values(?,?,?,?,?,?,?,?,?)";
     }
 
     @Override
@@ -75,12 +77,12 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
                 " owner_id_score =?," +
                 " guests_id_score =?," +
                 " next_match_id =?," +
-                " status =? WHERE id=?;";
+                " status =? WHERE id=?";
     }
 
     @Override
     public String getDeleteQuery() {
-        return "DELETE FROM matches WHERE id= ?;";
+        return "DELETE FROM matches WHERE id= ?";
     }
 
     @Override
@@ -104,7 +106,7 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
                 match.setStage(rs.getString("stage"));
                 match.setTournamentId(rs.getInt("tournament_id"));
                 match.setMatchData(rs.getDate("match_data"));
-                match.setOwnerId(Checker.getInteger(rs, "owner_id"));//Integer или null
+                match.setOwnerId(Checker.getInteger(rs, "owner_id"));//Integer РёР»Рё null
                 match.setGuestsId(Checker.getInteger(rs, "guests_id"));
                 match.setOwnerScore(Checker.getInteger(rs, "owner_id_score"));
                 match.setGuestsScore(Checker.getInteger(rs, "guests_id_score"));
@@ -124,7 +126,7 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
             statement.setString(1, object.getStage());
             statement.setInt(2, object.getTournamentId());
             statement.setDate(3, (Date) object.getMatchData());
-            Checker.setInt(statement, 4, object.getOwnerId());//на случай, если значение null
+            Checker.setInt(statement, 4, object.getOwnerId());//РЅР° СЃР»СѓС‡Р°Р№, РµСЃР»Рё Р·РЅР°С‡РµРЅРёРµ null
             Checker.setInt(statement, 5, object.getGuestsId());
             Checker.setInt(statement, 6, object.getOwnerScore());
             Checker.setInt(statement, 7, object.getGuestsScore());
@@ -141,7 +143,7 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
             statement.setString(1, object.getStage());
             statement.setInt(2, object.getTournamentId());
             statement.setDate(3, (Date) object.getMatchData());
-            Checker.setInt(statement, 4, object.getOwnerId());//на случай, если значение null
+            Checker.setInt(statement, 4, object.getOwnerId());//РЅР° СЃР»СѓС‡Р°Р№, РµСЃР»Рё Р·РЅР°С‡РµРЅРёРµ null
             Checker.setInt(statement, 5, object.getGuestsId());
             Checker.setInt(statement, 6, object.getOwnerScore());
             Checker.setInt(statement, 7, object.getGuestsScore());
@@ -152,4 +154,6 @@ public class DaoMatchPostgreSQL extends AbstractDao<Match, Integer> {
             throw new PersistException(e);
         }
     }
+
+
 }

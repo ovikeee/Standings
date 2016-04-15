@@ -2,17 +2,17 @@
 import java.sql.Connection;
 import java.sql.SQLException;
 
-/** Фабрика объектов для работы с базой данных */
+/** Р¤Р°Р±СЂРёРєР° РѕР±СЉРµРєС‚РѕРІ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ Р±Р°Р·РѕР№ РґР°РЅРЅС‹С… */
 public interface DaoFactory<Context> {
 
-    //вспомогательный интерфейс
+    //РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Р№ РёРЅС‚РµСЂС„РµР№СЃ
     public interface DaoCreator<Context> {
         public GenericDao create(Context context);
     }
 
-    /** Возвращает подключение к базе данных */
+    /** Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє Р±Р°Р·Рµ РґР°РЅРЅС‹С… */
     public Context getContext() throws PersistException;
 
-    /** Возвращает объект для управления персистентным состоянием объекта */
+    /** Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕР±СЉРµРєС‚ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРµСЂСЃРёСЃС‚РµРЅС‚РЅС‹Рј СЃРѕСЃС‚РѕСЏРЅРёРµРј РѕР±СЉРµРєС‚Р° */
     public GenericDao getDao(Class dtoClass) throws PersistException;
 }

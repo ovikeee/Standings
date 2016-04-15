@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by User on 19.03.2016.
  */
-public class DaoTournamentPostgreSQL extends AbstractDao<Tournament, Integer> {
+public class DaoTournamentPostgreSQL extends AbstractDAO<Tournament, Integer> {
 
     private class PersistTournament extends Tournament {
         public void setId(int id) {
@@ -22,21 +22,20 @@ public class DaoTournamentPostgreSQL extends AbstractDao<Tournament, Integer> {
 
     @Override
     public String getInsertQuery() {
-        return "insert into tournament (title, number_of_teams, season) values(?,?,?);";
+        return "insert into tournament (title, number_of_teams) values(?,?)";
     }
 
     @Override
     public String getUpdateQuery() {
         return "UPDATE tournament SET" +
-                " title ?," +
-                " number_of_teams ?," +
-                " season ?" +
-                " WHERE id= ?;";
+                " title= ?," +
+                " number_of_teams= ?" +
+                " WHERE id= ?";
     }
 
     @Override
     public String getDeleteQuery() {
-        return "DELETE FROM tournament WHERE id= ?;";
+        return "DELETE FROM tournament WHERE id= ?";
     }
 
     @Override
@@ -58,7 +57,6 @@ public class DaoTournamentPostgreSQL extends AbstractDao<Tournament, Integer> {
                 Tournament.setId(rs.getInt("id"));
                 Tournament.setTitle(rs.getString("title"));
                 Tournament.setNumberOfTeams(rs.getInt("number_of_teams"));
-                Tournament.setSeason(rs.getString("season"));
                 result.add(Tournament);
             }
         } catch (Exception e) {
@@ -72,7 +70,6 @@ public class DaoTournamentPostgreSQL extends AbstractDao<Tournament, Integer> {
         try {
             statement.setString(1, object.getTitle());
             statement.setInt(2, object.getNumberOfTeams());
-            statement.setString(3, object.getSeason());
         } catch (Exception e) {
             throw new PersistException(e);
         }
@@ -83,8 +80,7 @@ public class DaoTournamentPostgreSQL extends AbstractDao<Tournament, Integer> {
         try {
             statement.setString(1, object.getTitle());
             statement.setInt(2, object.getNumberOfTeams());
-            statement.setString(3, object.getSeason());
-            statement.setInt(4, object.getId());
+            statement.setInt(3, object.getId());
         } catch (Exception e) {
             throw new PersistException(e);
         }

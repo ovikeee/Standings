@@ -29,7 +29,7 @@ public class Teams extends HttpServlet {
                 DaoTeamPostgreSQL teams = new DaoTeamPostgreSQL(connection);
                 List<Team> teamList = teams.getAll();
 
-                //настройка передачи данных
+                //РЅР°СЃС‚СЂРѕР№РєР° РїРµСЂРµРґР°С‡Рё РґР°РЅРЅС‹С…
                 response.setContentType("application/json;charset=UTF-8");
                 org.json.JSONWriter jw = new org.json.JSONWriter(response.getWriter());
                 jw.array();

@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Объектное представление сущности Team.
+ * РћР±СЉРµРєС‚РЅРѕРµ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёРµ СЃСѓС‰РЅРѕСЃС‚Рё Team.
  */
 public class Team implements Identified<Integer> {
 

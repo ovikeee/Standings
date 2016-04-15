@@ -7,7 +7,7 @@ import java.sql.SQLException;
  */
 public class Checker {
 
-    public static Integer isInt(String str) {
+    public static Integer getInt(String str) {
         Integer result = null;
         try {
             result = Integer.parseInt(str);

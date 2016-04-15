@@ -2,18 +2,112 @@
  * Created by User on 18.03.2016.
  */
 var req;
+var req2;
 var matchesTable;
 var seasonSelector;
 var tournamentSelector;
 var tbody;
 var removeId;
 var selectedMatch;
+
 function start() {
     tournamentSelector = document.getElementById("tournaments-selector");
     seasonSelector = document.getElementById("season-selector");
     matchesTable = document.getElementById("matches-table");
     tbody = document.getElementById("tbody_id");
+    loadSelectBox();
     showTable();
+}
+
+function loadSelectBox() {
+    var url = "matches?type=loadSelectBox";
+    req2 = new XMLHttpRequest();
+    req2.open("GET", url, true);
+    req2.onreadystatechange = filling;
+    req2.send(null);
+
+    var url = "matches?type=loadSelectBoxTournament";
+    req3 = new XMLHttpRequest();
+    req3.open("GET", url, true);
+    req3.onreadystatechange = fillingTournament;
+    req3.send(null);
+
+
+}
+
+function clearSelectors() {
+    document.getElementById("ownerId").innerHTML = "";
+    document.getElementById("guestsId").innerHTML = "";
+}
+
+function filling() {
+    if (req2.readyState == 4) {
+        clearSelectors();
+        if (req2.status == 200) {
+            if (req2.responseText == null) {
+                alert("is null");
+                return false;
+            } else {
+                var selectorInfo = JSON.parse(req2.responseText);
+                var ownerSelector = document.getElementById("ownerId");
+                var guestsSelector = document.getElementById("guestsId");
+              //  var tournamentSelector = document.getElementById("tournamentId");
+                var option;
+                var option2;
+                var option3;
+                if (selectorInfo.length > 0) {
+                    for (loop = 0; loop < selectorInfo.length; loop++) {
+                        option = document.createElement("option");
+                        option.textContent = selectorInfo[loop].teams;
+                        option.setAttribute("value",selectorInfo[loop].teamId);
+
+                        option2 = document.createElement("option");
+                        option2.textContent = selectorInfo[loop].teams;
+                        option2.setAttribute("value",selectorInfo[loop].teamId);
+
+                        ownerSelector.appendChild(option);
+                        guestsSelector.appendChild(option2);
+                    }
+                }
+
+
+                //if (selectorInfo[1].length > 0) {
+                //    for (loop = 0; loop < selectorInfo[1].length; loop++) {
+                //        option3 = document.createElement("option");
+                //        option3.textContent = selectorInfo[loop].tournaments;
+                //        option3.setAttribute("value", selectorInfo[loop].tournamentId);
+                //
+                //        tournamentSelector.appendChild(option3);
+                //    }
+                //}
+            }
+        }
+    }
+}
+
+function fillingTournament() {
+   // alert("is null");
+    if (req3.readyState == 4) {
+        document.getElementById("tournamentId").innerHTML = "";
+        if (req3.status == 200) {
+            if (req3.responseText == null) {
+                alert("is null");
+                return false;
+            } else {
+                var selectorInfo = JSON.parse(req3.responseText);
+                var tournamentSelector = document.getElementById("tournamentId");
+                var option3;
+                if (selectorInfo.length > 0) {
+                    for (loop = 0; loop < selectorInfo.length; loop++) {
+                        option3 = document.createElement("option");
+                        option3.textContent = selectorInfo[loop].tournaments;
+                        option3.setAttribute("value", selectorInfo[loop].tournamentId);
+                        tournamentSelector.appendChild(option3);
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -27,7 +121,7 @@ function callback() {
             case 555: //подтверждение каскадного удаления
                 document.getElementById("textInfo").innerText = "Претенденты на удалеие:";
                 parseMessages(req.responseText);
-                if (confirm("При удалении выбранного матча удалятся и приведенные ниже матчи. Хотите ли Вы их удалить?")) {
+                if (confirm("При удалении выбранного турнира удалятся и все матчи этого турнира. Хотите ли Вы удалить этот турнир?")) {
                     cascadeDelete(removeId);
                 } else {
                     showTable();
@@ -67,7 +161,7 @@ function parseMessages(responseText) {
                 appendWeight(
                     matchesInfo[loop].match_id,
                     matchesInfo[loop].stage,
-                    matchesInfo[loop].tournamentId,
+                    matchesInfo[loop].tournament,
                     matchesInfo[loop].data,
                     matchesInfo[loop].owner,
                     matchesInfo[loop].guests,
@@ -151,11 +245,11 @@ function addMatch() {
      */
     if (checkFields()) {
         var url = "matches?type=addMatch" +
-            "&tournamentId=" + document.getElementById("tournamentId").value +
+            "&tournamentId=" + document.getElementById("tournamentId").options[document.getElementById("tournamentId").options.selectedIndex].value +
             "&stageId=" + document.getElementById("stageId").options[document.getElementById("stageId").options.selectedIndex].text +
             "&dateId=" + document.getElementById("dateId").options[document.getElementById("dateId").options.selectedIndex].text +
-            "&ownerId=" + document.getElementById("ownerId").options[document.getElementById("ownerId").options.selectedIndex].text +
-            "&guestsId=" + document.getElementById("guestsId").options[document.getElementById("guestsId").options.selectedIndex].text +
+            "&ownerId=" + document.getElementById("ownerId").options[document.getElementById("ownerId").options.selectedIndex].value +
+            "&guestsId=" + document.getElementById("guestsId").options[document.getElementById("guestsId").options.selectedIndex].value +
             "&scoreId=" + document.getElementById("scoreId").value +
             "&next_matchId=" + document.getElementById("next_matchId").value +
             "&statusId=" + document.getElementById("statusId").options[document.getElementById("statusId").options.selectedIndex].text
@@ -173,11 +267,11 @@ function editMatch() {
     if (checkFields()) {
         var url = "matches?type=editMatch" +
             "&matchId=" + document.getElementById("match_id").value +
-            "&tournamentId=" + document.getElementById("tournamentId").value +
+            "&tournamentId=" + document.getElementById("tournamentId").options[document.getElementById("tournamentId").options.selectedIndex].value +
             "&stageId=" + document.getElementById("stageId").options[document.getElementById("stageId").options.selectedIndex].text +
             "&dateId=" + document.getElementById("dateId").options[document.getElementById("dateId").options.selectedIndex].text +
-            "&ownerId=" + document.getElementById("ownerId").options[document.getElementById("ownerId").options.selectedIndex].text +
-            "&guestsId=" + document.getElementById("guestsId").options[document.getElementById("guestsId").options.selectedIndex].text +
+            "&ownerId=" + document.getElementById("ownerId").options[document.getElementById("ownerId").options.selectedIndex].value +
+            "&guestsId=" + document.getElementById("guestsId").options[document.getElementById("guestsId").options.selectedIndex].value +
             "&scoreId=" + document.getElementById("scoreId").value +
             "&next_matchId=" + document.getElementById("next_matchId").value +
             "&statusId=" + document.getElementById("statusId").options[document.getElementById("statusId").options.selectedIndex].text
@@ -190,7 +284,6 @@ function searchBy() {
         "&findType=" + document.getElementById("param").options[document.getElementById("param").options.selectedIndex].value +
         "&value=" + document.getElementById("findField").value;
     action(url);
-
 }
 
 function removeMatch(element) {
@@ -212,20 +305,20 @@ function cascadeDelete() {
 }
 
 function checkFields() {
-    //проверка обязательных полей ввода
-    var touenId = document.getElementById("tournamentId");
-
-    if (($.isNumeric(touenId.value)) && (touenId.value / Math.floor(touenId.value) == 1)) {
-        //Целое число
+    ////проверка обязательных полей ввода
+    //var touenId = document.getElementById("tournamentId");
+    //
+    //if (($.isNumeric(touenId.value)) && (touenId.value / Math.floor(touenId.value) == 1)) {
+    //    //Целое число
         return true;
-    } else {
-        //не целое число
-        //выделяем ячейку
-        //touenId.addClass("active");
-        //$('#tournamentId').parent().addClass("active");
-        alert("Введите целое число в поле tournamentId");
-        return false;
-    }
+    //} else {
+    //    //не целое число
+    //    //выделяем ячейку
+    //    //touenId.addClass("active");
+    //    //$('#tournamentId').parent().addClass("active");
+    //    alert("Введите целое число в поле tournamentId");
+    //    return false;
+    //}
 }
 
 function action(url) {
@@ -246,7 +339,7 @@ function action(url) {
 function selectRow(row) {
     $(".active").removeClass();
     $(row).addClass("active");
-    selectedMatch=row;
+    selectedMatch = row;
     /*    if(tournament.classList.contains("active")){
      tournament.classList.remove("active");
      };
@@ -263,11 +356,10 @@ function selectRow(row) {
 
 }
 
-
 function copyMatch() {
-   // alert(selectedMatch.getElementsByTagName("td")[0].innerHTML);
+    // alert(selectedMatch.getElementsByTagName("td")[0].innerHTML);
     var url = "matches?type=copyMatch" +
-        "&matchId="+selectedMatch.getElementsByTagName("td")[0].innerHTML;
+        "&matchId=" + selectedMatch.getElementsByTagName("td")[0].innerHTML;
     action(url);
 }
 

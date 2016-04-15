@@ -15,15 +15,14 @@ create table teams(
 create table tournament(
   id serial PRIMARY KEY,
   title varchar(50) NOT NULL UNIQUE,
-  number_of_teams integer NOT NULL,
-  season varchar(15) NOT NULL
+  number_of_teams integer
 );
 
 create table matches(
   id serial PRIMARY KEY ,
   stage varchar(10),
   tournament_id integer NOT NULL REFERENCES tournament(id) ON DELETE CASCADE,
-  match_data Timestamptz NOT NULL ,
+  match_data Timestamptz,
   owner_id integer REFERENCES teams(id) ON DELETE CASCADE,
   guests_id integer REFERENCES teams(id) ON DELETE CASCADE,
   owner_id_score integer ,
@@ -39,35 +38,35 @@ CREATE INDEX matches__next_match_id__index ON matches(next_match_id);
 
 
 
-insert into tournament(id, title, number_of_teams, season) values(1,'La Liga',10,'2010/2011');
-insert into tournament(id, title, number_of_teams, season) values(2,'Copa del Rey',20,'2010/2011');
-insert into tournament(id, title, number_of_teams, season) values(3,'Bundesliga',10,'2011/2012');
-insert into tournament(id, title, number_of_teams, season) values(4,'Bundesliga-2',10,'2014/2015');
-insert into tournament(id, title, number_of_teams, season) values(5,'DFB-Pokal',10,'2010/2011');
-insert into tournament(id, title, number_of_teams, season) values(6,'BARCLAYS Premier League',10,'2010/2011');
-insert into tournament(id, title, number_of_teams, season) values(7,'The FA Cup',10,'2010/2011');
-insert into tournament(id, title, number_of_teams, season) values(8,'RFPL',10,'2015/2016');
-insert into tournament(id, title, number_of_teams, season) values(9,'Russian Cup',10,'2015/2016');
-insert into tournament(id, title, number_of_teams, season) values(10,'FIFA World Cup Russia', 32,'2018');
+insert into tournament( title, number_of_teams) values('La Liga(2015/2016)',10);
+insert into tournament( title, number_of_teams) values('Copa del Rey(2015/2016)',20);
+insert into tournament( title, number_of_teams) values('Bundesliga(2015/2016)',10);
+insert into tournament( title, number_of_teams) values('Bundesliga-2(2015/2016)',10);
+insert into tournament( title, number_of_teams) values('DFB-Pokal(2010/2011)',10);
+insert into tournament( title, number_of_teams) values('BARCLAYS Premier League(2015/2016)',10);
+insert into tournament( title, number_of_teams) values('The FA Cup(2015/2016)',10);
+insert into tournament( title, number_of_teams) values('RFPL(2015/2016)',10);
+insert into tournament( title, number_of_teams) values('Russian Cup(2015/2016)',10);
+insert into tournament( title, number_of_teams) values('FIFA World Cup Russia(2018)', 32);
 
 
 
-insert into teams(id, title) values(1,'CSKA Moskva');
-insert into teams(id, title) values(2,'FK Rostov');
-insert into teams(id, title) values(3,'Lokomotiv Moskva');
-insert into teams(id, title) values(4,'FK Krasnodar');
-insert into teams(id, title) values(5,'Zenit St. Petersburg');
-insert into teams(id, title) values(6,'Terek Groznyi');
-insert into teams(id, title) values(7,'Spartak Moskva');
-insert into teams(id, title) values(8,'Ural Yekaterinenburg');
-insert into teams(id, title) values(9,'Rubin Kazan');
-insert into teams(id, title) values(10,'Amkar Perm');
-insert into teams(id, title) values(11,'Dinamo Moskva');
-insert into teams(id, title) values(12,'Krylya Sovetov Samara');
-insert into teams(id, title) values(13,'FC Ufa');
-insert into teams(id, title) values(14,'Anzhi Makhachkala');
-insert into teams(id, title) values(15,'Kuban Krasnodar');
-insert into teams(id, title) values(16,'Mordovya Saransk');
+insert into teams( title) values('CSKA Moskva');
+insert into teams( title) values('FK Rostov');
+insert into teams( title) values('Lokomotiv Moskva');
+insert into teams( title) values('FK Krasnodar');
+insert into teams( title) values('Zenit St. Petersburg');
+insert into teams( title) values('Terek Groznyi');
+insert into teams( title) values('Spartak Moskva');
+insert into teams( title) values('Ural Yekaterinenburg');
+insert into teams( title) values('Rubin Kazan');
+insert into teams( title) values('Amkar Perm');
+insert into teams( title) values('Dinamo Moskva');
+insert into teams( title) values('Krylya Sovetov Samara');
+insert into teams( title) values('FC Ufa');
+insert into teams( title) values('Anzhi Makhachkala');
+insert into teams( title) values('Kuban Krasnodar');
+insert into teams( title) values('Mordovya Saransk');
 
 
 insert into matches( tournament_id, match_data) values(9, '2015-09-10');
@@ -91,3 +90,4 @@ insert into matches( tournament_id, match_data, next_match_id) values( 5, '2015-
 insert into matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score,next_match_id, status) values( '1/2',5, '2015-08-31 11:23:54', 1,2,2,3,15,'is not played');
 insert into  matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score,next_match_id, status) values( '1/4',5, '2015-08-31 11:23:54', 2,10,2,1,17,'is not played');
 insert into  matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score,next_match_id, status) values( '1/4',5, '2015-08-31 11:23:54', 2,10,2,1,17,'is not played') ;
+ 
