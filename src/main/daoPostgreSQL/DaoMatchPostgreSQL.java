@@ -34,6 +34,22 @@ public class DaoMatchPostgreSQL extends AbstractDAO<Match, Integer> {
         return list;
     }
 
+    //select * from matches where (guests_id = 1 OR owner_id = 1) AND tournament_id=11;
+
+    public List<Match> getMatches(int teamId, int tournamentId){
+        List<Match> list = null;
+        String sql = "select * from matches where (guests_id = ? OR owner_id = ?) AND tournament_id=?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, teamId);
+            statement.setInt(2, teamId);
+            statement.setInt(3, tournamentId);
+            ResultSet rs = statement.executeQuery();
+            list = parseResultSet(rs);
+        } catch (Exception e) {
+        }
+        return list;
+    }
+
     /**
      * находит матчи у которых поле nextMatch равен введеному id
      * возвращает список типа Match

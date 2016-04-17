@@ -90,7 +90,7 @@ public class Matches extends HttpServlet {
                         response.setStatus(490);
                         matchList = matches.getAll(); //получение всех матчей
                 }
-                if (type != "loadSelectBox") {
+                if (type != "loadSelectBox" && type !="loadSelectBoxTournament" ) {
                     sendJSON(response, matchList);//отправка JSON данных
                 }
             }
@@ -213,7 +213,7 @@ public class Matches extends HttpServlet {
             DaoTournamentPostgreSQL tournaments;
             teams = (DaoTeamPostgreSQL) factory.getDao(Team.class);
             tournaments = (DaoTournamentPostgreSQL) factory.getDao(Tournament.class);
-            if (matchList != null) {
+            if (matchList != null && !matchList.isEmpty()) {
                 response.setContentType("application/json;charset=UTF-8");
                 org.json.JSONWriter jw = new org.json.JSONWriter(response.getWriter());
                 jw.array();
@@ -384,7 +384,6 @@ public class Matches extends HttpServlet {
             e.printStackTrace();
         }
     }
-
 
 }
 

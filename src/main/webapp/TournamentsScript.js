@@ -9,32 +9,6 @@ function init() {
     showTable();
 }
 
-function callback() {
-    clearTable();
-    if (req.readyState == 4) {
-        switch (req.status) {
-            case 200: //без ошибок. Выводим измененую таблицу
-                break;
-            case 444: //удаление не выполнено, такой матч не найден. Возможно его только что кто-то удалил
-                alert("Удаление не выполнено! ");
-                break;
-            case 445: //добавление не удалось
-                alert("Добавление не выполнено!");
-                break;
-            case 446://изменение не произведено
-                alert("Изменение не выполнено!");
-                break;
-            case 490: //не выполнена ни одна операция
-                alert("Запрос к серверу не выполнил никаких действий!");
-        }
-        parseMessages(req.responseText);
-    }
-}
-
-function clearTable() {
-    tbody.innerHTML = "";
-}
-
 function parseMessages(responseText) {
     if (responseText == null) {
         return false;
@@ -56,6 +30,7 @@ function parseMessages(responseText) {
 function appendWeight(tournamentId, tournamentTitle,numberOfTeams) {
     var row;
     var cell;
+    var ref;
 
     row = document.createElement("tr");
 
@@ -75,13 +50,40 @@ function appendWeight(tournamentId, tournamentTitle,numberOfTeams) {
     ref = document.createElement("a");
     ref.textContent = "X";
     // ref.setAttribute("href", "")
-    ref.setAttribute("id", tournamentId)
-    ref.setAttribute("onClick", "removeTournament(this)")
+    ref.setAttribute("id", tournamentId);
+    ref.setAttribute("onClick", "removeTournament(this)");
     cell.appendChild(ref);
     row.appendChild(cell);
 
     tbody.appendChild(row);
 }
+
+function callback() {
+    clearTable();
+    if (req.readyState == 4) {
+        switch (req.status) {
+            case 200: //без ошибок. Выводим измененую таблицу
+                break;
+            case 444: //удаление не выполнено, такой Турнир не найден. Возможно его только что кто-то удалил
+                alert("Удаление не выполнено! ");
+                break;
+            case 445: //добавление не удалось
+                alert("Добавление не выполнено!");
+                break;
+            case 446://изменение не произведено
+                alert("Изменение не выполнено!");
+                break;
+            case 490: //не выполнена ни одна операция
+                alert("Запрос к серверу не выполнил никаких действий!");
+        }
+        parseMessages(req.responseText);
+    }
+}
+
+function clearTable() {
+    tbody.innerHTML = "";
+}
+
 
 function showTable() {
     // Формируем адрес с параметрами
@@ -89,6 +91,7 @@ function showTable() {
 
     action(url);
 }
+
 function action(url){
     // Создаем объект запроса
     req = new XMLHttpRequest();

@@ -38,6 +38,25 @@ public class DaoTournamentPostgreSQL extends AbstractDAO<Tournament, Integer> {
         return "DELETE FROM tournament WHERE id= ?";
     }
 
+    public List<Tournament> getTournamentsHasTeam(Integer id) throws PersistException {
+        LinkedList<Tournament> result = new LinkedList<Tournament>();
+        String sql = "select id, title from tournament where id in (select distinct tournament_id from matches  where guests_id = ? OR owner_id = ?)";
+        try(PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1,id);
+            statement.setInt(2,id);
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                PersistTournament tournament = new PersistTournament();
+                tournament.setId(rs.getInt("id"));
+                tournament.setTitle(rs.getString("title"));
+                result.add(tournament);
+            }
+        } catch (Exception e) {
+            throw new PersistException(e);
+        }
+        return result;
+    }
+
     @Override
     public Tournament create() throws PersistException {
         Tournament g = new Tournament();
@@ -53,11 +72,11 @@ public class DaoTournamentPostgreSQL extends AbstractDAO<Tournament, Integer> {
         LinkedList<Tournament> result = new LinkedList<Tournament>();
         try {
             while (rs.next()) {
-                PersistTournament Tournament = new PersistTournament();
-                Tournament.setId(rs.getInt("id"));
-                Tournament.setTitle(rs.getString("title"));
-                Tournament.setNumberOfTeams(rs.getInt("number_of_teams"));
-                result.add(Tournament);
+                PersistTournament tournament = new PersistTournament();
+                tournament.setId(rs.getInt("id"));
+                tournament.setTitle(rs.getString("title"));
+                tournament.setNumberOfTeams(rs.getInt("number_of_teams"));
+                result.add(tournament);
             }
         } catch (Exception e) {
             throw new PersistException(e);

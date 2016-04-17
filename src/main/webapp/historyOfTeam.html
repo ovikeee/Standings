@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script type="text/JavaScript" src="historyScript.js"></script>
+    <title>История команды</title>
+    <meta charset="UTF-8">
+</head>
+<body onload="init()">
+<p align="center" id="teamTitleParagraph">Название команды</p>
+<p align="center">&nbsp;Выберите турнир:&nbsp;<select id="selectTournament" name="selectTournament"><option value="1">Турнир Х</option></select></p>
+<p align="center"><input name="getHistory" onclick="getMatches()" type="button" value="Показать историю игр"></p>
+<p>&nbsp;</p>
+<table align="center" border="1" cellpadding="0" cellspacing="0">
+    <thead>
+    <tr>
+        <th scope="col">id матча</th>
+        <th scope="col">стадия турнира</th>
+        <th scope="col">дата матча</th>
+        <th scope="col">хозяева</th>
+        <th scope="col">гости</th>
+        <th scope="col">счёт</th>
+        <th scope="col">следующий матч</th>
+        <th scope="col">статус игры</th>
+    </tr>
+    </thead>
+    <tbody id="tbody_id">
+    <tr id = "matchRow">
+        <td id = "matchId">&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td id = "nextMatchId">&nbsp;</td>
+    </tr>
+    </tbody>
+</table>
+<p align="center"><input name="prevMatch" onclick="setPrevMatch()" type="button" value="Предыдущий матч">&nbsp; &nbsp;<input name="nextMatch" onclick="setNextMatch()" type="button" value="Следующий матч"></p>
+</body>
+</html>

@@ -222,8 +222,8 @@ function appendWeight(match_id, stage, tournament_id, data, owner, guests, resul
     ref = document.createElement("a");
     ref.textContent = "X";
     // ref.setAttribute("href", "")
-    ref.setAttribute("id", match_id)
-    ref.setAttribute("onClick", "removeMatch(this)")
+    ref.setAttribute("id", match_id);
+    ref.setAttribute("onClick", "removeMatch(this)");
     cell.appendChild(ref);
     row.appendChild(cell);
 
@@ -336,16 +336,40 @@ function action(url) {
     req.send(null);
 }
 
+function setOptionByName(param,title){
+    var select = document.getElementById(param);
+    for (var i = 0; i < select.options.length; i++) {
+        var option = select.options[i];
+        if(option.innerText==title) {
+            select.selectedIndex = i;
+        }
+    }
+}
+
 function selectRow(row) {
     $(".active").removeClass();
     $(row).addClass("active");
     selectedMatch = row;
+    document.getElementById("match_id").value = row.getElementsByTagName("td")[0].innerHTML;
+
+  //  document.getElementById("tournamentId").selectedIndex = row.getElementsByTagName("td")[2].innerHTML;
+    setOptionByName("tournamentId",row.getElementsByTagName("td")[2].innerHTML);
+   // document.getElementById("stageId").selectedIndex = row.getElementsByTagName("td")[1].innerHTML;
+    setOptionByName("stageId",row.getElementsByTagName("td")[1].innerHTML);
+   // document.getElementById("dateId").options[row[3]].select +
+  //  document.getElementById("ownerId").selectedIndex = row.getElementsByTagName("td")[4].innerHTML;
+    setOptionByName("ownerId",row.getElementsByTagName("td")[4].innerHTML);
+   // document.getElementById("guestsId").selectedIndex = row.getElementsByTagName("td")[5].innerHTML;
+    setOptionByName("guestsId",row.getElementsByTagName("td")[5].innerHTML);
+    document.getElementById("scoreId").value =row.getElementsByTagName("td")[6].innerHTML;
+    document.getElementById("next_matchId").value = row.getElementsByTagName("td")[7].innerHTML;
+   // document.getElementById("statusId").options[document.getElementById("statusId").options.selectedIndex].text
     /*    if(tournament.classList.contains("active")){
      tournament.classList.remove("active");
      };
      $('div').removeClass("clName1 clName2")
      */
-    //"&tournamentId=" + document.getElementById("tournamentId").value =  +
+    //"&tournamentId=" + document.getElementById("match_id").value =  +
     //"&stageId=" + document.getElementById("stageId").options[document.getElementById("stageId").options.selectedIndex].text +
     //"&dateId=" + document.getElementById("dateId").options[document.getElementById("dateId").options.selectedIndex].text +
     //"&ownerId=" + document.getElementById("ownerId").options[document.getElementById("ownerId").options.selectedIndex].text +

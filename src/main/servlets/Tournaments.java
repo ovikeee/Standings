@@ -23,7 +23,6 @@ public class Tournaments extends HttpServlet {
     static DaoFactory<Connection> factory = new DaoFactoryPostgreSQL();
     static DaoTournamentPostgreSQL tournaments;
 
-
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException, ServletException {
         try {
             tournaments = (DaoTournamentPostgreSQL) factory.getDao(Tournament.class);//создаем ДАО объект для работы с таблией турниров
@@ -39,8 +38,7 @@ public class Tournaments extends HttpServlet {
                         tournamentList = findBy(request.getParameter("findType"), request.getParameter("value"));
                         break;
                     case "createTournament":
-                        if (!createTournament(request)) {            //добавляем матч
-
+                        if (!createTournament(request)) {
                             response.setStatus(445);//добавление не удалось
                         }
                         tournamentList = tournaments.getAll(); //получение всех матчей
@@ -101,9 +99,9 @@ public class Tournaments extends HttpServlet {
                     jw.key("tournamentTitle");
                     jw.value(tournament.getTitle());
                     jw.key("numberOfTeams");
-                    if(tournament.getNumberOfTeams()!=null) {
+                    if (tournament.getNumberOfTeams() != null) {
                         jw.value(tournament.getNumberOfTeams());
-                    }else {
+                    } else {
                         jw.value("");
                     }
                     jw.endObject();
@@ -118,14 +116,62 @@ public class Tournaments extends HttpServlet {
     private boolean createTournament(HttpServletRequest request) {
         try {
             Tournament tournament = new Tournament(); //(Match) factory.getDao(Match.class).create();
-            Integer checkInt;
-            tournament.setNumberOfTeams(Checker.getInt(request.getParameter("teamNumber")));//установит либо число либо null
+            Integer teamNumber = Checker.getInt(request.getParameter("teamNumber"));
+            tournament.setNumberOfTeams(teamNumber);//установит либо число либо null
             if (request.getParameter("tournamentTitle") != null && request.getParameter("tournamentTitle") != "") {
                 tournament.setTitle(request.getParameter("tournamentTitle"));
-            }else{
+            } else {
                 return false;
             }
-            return tournaments.persist(tournament) != null;
+            Tournament persistTournament = tournaments.persist(tournament);
+            if (persistTournament != null) {//создаем матчи
+                int tournamentId = persistTournament.getId();
+                DaoFactory<Connection> factory = new DaoFactoryPostgreSQL();
+                DaoMatchPostgreSQL matches = (DaoMatchPostgreSQL) factory.getDao(Match.class);//создаем ДАО объект для работы с таблией матчей
+                Match match;
+                int k = 0;
+                int nextMatchId = 2;
+                int startMatchId;
+                String stage;
+                Match persistMatch;
+
+                //финальный матч
+                match = new Match();
+                match.setTournamentId(tournamentId);
+                match.setStage("final");
+                persistMatch = matches.persist(match);
+                if (persistMatch == null) {
+                    System.out.println("Матч не создан");
+                    throw new Exception();
+                } else {
+                    startMatchId = persistMatch.getId();//сохраняем id добавленого матча
+                }
+
+
+//Не будет работать, если кто-нибудь во время создания таблицы добавит матч.
+                for (int i = 2; i < teamNumber; i *= 2) {//пробегаем по этапу турнира (от полуфинала к начальным матчам)
+                    if (i * 2 >= teamNumber) {//если команды не покроют все матчи более раннего этапа, то прекращаем создавать этапы
+                        k = teamNumber - i + 1; //досоздаем оставшиеся матчи
+                    } else {
+                        k = i; //создаем матчи текущего этапа
+                    }
+                    stage="1/"+i;
+                    for (int j = 0; j < k; j++) {////создаем или досоздаем матчи текущего этапа
+                        match = new Match();
+                        match.setTournamentId(tournamentId);
+                        match.setStage(stage);
+                        match.setNextMatchId(startMatchId+nextMatchId/2-1);//устанавливаем id следующего матча для 1-ого(финального) null
+                        persistMatch = matches.persist(match);
+                        if(persistMatch==null){
+                            System.out.println("Матч не создан");
+                            throw  new Exception();
+                        }else {
+                            nextMatchId++;
+                        }
+                    }
+                }
+            }
+            return true;
         } catch (Exception ex) {
             ex.printStackTrace();
             return false;

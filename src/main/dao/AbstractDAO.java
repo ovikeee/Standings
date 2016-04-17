@@ -1,3 +1,4 @@
+import javax.validation.constraints.NotNull;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -90,6 +91,7 @@ public abstract class AbstractDAO<T extends Identified<PK>, PK extends Integer> 
         return list;
     }
 
+    @NotNull
     @Override
     public List<T> findByIntParam(String param, int value) throws PersistException {
         List<T> list;
