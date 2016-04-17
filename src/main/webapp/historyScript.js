@@ -24,15 +24,15 @@ function init() {
 }
 
 function parserUrl() {
-    var tmp = new Array();		// два вспомагательных
-    var tmp2 = new Array();		// массива
+    var tmp = new Array();		// РґРІР° РІСЃРїРѕРјР°РіР°С‚РµР»СЊРЅС‹С…
+    var tmp2 = new Array();		// РјР°СЃСЃРёРІР°
     var param = new Array();
-    var get = location.search;	// строка GET запроса
+    var get = location.search;	// СЃС‚СЂРѕРєР° GET Р·Р°РїСЂРѕСЃР°
     if (get != '') {
-        tmp = (get.substr(1)).split('&');	// разделяем переменные
+        tmp = (get.substr(1)).split('&');	// СЂР°Р·РґРµР»СЏРµРј РїРµСЂРµРјРµРЅРЅС‹Рµ
         for (var i = 0; i < tmp.length; i++) {
-            tmp2 = tmp[i].split('=');		// массив param будет содержать
-            param[tmp2[0]] = tmp2[1];		// пары ключ(имя переменной)->значение
+            tmp2 = tmp[i].split('=');		// РјР°СЃСЃРёРІ param Р±СѓРґРµС‚ СЃРѕРґРµСЂР¶Р°С‚СЊ
+            param[tmp2[0]] = tmp2[1];		// РїР°СЂС‹ РєР»СЋС‡(РёРјСЏ РїРµСЂРµРјРµРЅРЅРѕР№)->Р·РЅР°С‡РµРЅРёРµ
         }
         return param;
     }
@@ -46,16 +46,16 @@ function setTeam() {
 }
 
 function action(url) {
-    // Создаем объект запроса
+    // РЎРѕР·РґР°РµРј РѕР±СЉРµРєС‚ Р·Р°РїСЂРѕСЃР°
     req = new XMLHttpRequest();
 
-    // Указываем метод, адрес и асинхронность
+    // РЈРєР°Р·С‹РІР°РµРј РјРµС‚РѕРґ, Р°РґСЂРµСЃ Рё Р°СЃРёРЅС…СЂРѕРЅРЅРѕСЃС‚СЊ
     req.open("GET", url, true);
 
-    // Указываем функцию для обратного вызова
+    // РЈРєР°Р·С‹РІР°РµРј С„СѓРЅРєС†РёСЋ РґР»СЏ РѕР±СЂР°С‚РЅРѕРіРѕ РІС‹Р·РѕРІР°
     req.onreadystatechange = callback;
 
-    // Отправляем запрос
+    // РћС‚РїСЂР°РІР»СЏРµРј Р·Р°РїСЂРѕСЃ
     req.send(null);
 }
 
@@ -65,7 +65,7 @@ function fillingTournament() {
         tournamentSelector.innerHTML = "";
         if (req.status == 200) {
             if (req.responseText == null || req.responseText == "") {
-                alert("Эта команда не учавствовала ни в каком турнире");
+                alert("Р­С‚Р° РєРѕРјР°РЅРґР° РЅРµ СѓС‡Р°РІСЃС‚РІРѕРІР°Р»Р° РЅРё РІ РєР°РєРѕРј С‚СѓСЂРЅРёСЂРµ");
                 return false;
             } else {
                 var selectorInfo = JSON.parse(req.responseText);
@@ -93,11 +93,11 @@ function getMatches() {
 function callback() {
     if (req.readyState == 4) {
         switch (req.status) {
-            case 200: //без ошибок. Выводим измененую таблицу
+            case 200: //Р±РµР· РѕС€РёР±РѕРє. Р’С‹РІРѕРґРёРј РёР·РјРµРЅРµРЅСѓСЋ С‚Р°Р±Р»РёС†Сѓ
                 parseMessages(req.responseText);
                 break;
-            case 490: //не выполнена ни одна операция
-                alert("Запрос к серверу не выполнил никаких действий!");
+            case 490: //РЅРµ РІС‹РїРѕР»РЅРµРЅР° РЅРё РѕРґРЅР° РѕРїРµСЂР°С†РёСЏ
+                alert("Р—Р°РїСЂРѕСЃ Рє СЃРµСЂРІРµСЂСѓ РЅРµ РІС‹РїРѕР»РЅРёР» РЅРёРєР°РєРёС… РґРµР№СЃС‚РІРёР№!");
         }
     }
 }
@@ -137,14 +137,14 @@ function parseMessages(responseText) {
                     matchesInfo[loop].state
                 );
             }
-            //устанавливаем первый матч
+            //СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРµСЂРІС‹Р№ РјР°С‚С‡
             var tmpMatch;
             var flag = false;
             for (var i = 0; i < allMatches.length; i++) {
                 tmpMatch = allMatches[i];
                 for (var i = 0; i < allMatches.length; i++) {
-                    if (allMatches[i][6] == tmpMatch[0]) {//смотрим, есть ли матчи, ссылающиеся на tmpMatch
-                        flag = true; //есть
+                    if (allMatches[i][6] == tmpMatch[0]) {//СЃРјРѕС‚СЂРёРј, РµСЃС‚СЊ Р»Рё РјР°С‚С‡Рё, СЃСЃС‹Р»Р°СЋС‰РёРµСЃСЏ РЅР° tmpMatch
+                        flag = true; //РµСЃС‚СЊ
                     }
                 }
                 if (flag == false){
@@ -152,7 +152,7 @@ function parseMessages(responseText) {
                     setMatch(firstMatch);
                     return true;
                 }
-                flag = false;//сбрасываем флаг
+                flag = false;//СЃР±СЂР°СЃС‹РІР°РµРј С„Р»Р°Рі
             }
         }
         return true;
@@ -160,30 +160,30 @@ function parseMessages(responseText) {
 }
 
 function setPrevMatch() {
-    var currentMatchId = document.getElementById("matchId");
+    var currentMatchId = document.getElementById("matchId").innerHTML;
     var prevMatch;
     for (var i = 0; i < allMatches.length; i++) {
-        if (allMatches[i][6] == currentMatchId) {//находим предыдущий матч
+        if (allMatches[i][6] == currentMatchId) {//РЅР°С…РѕРґРёРј РїСЂРµРґС‹РґСѓС‰РёР№ РјР°С‚С‡
             prevMatch= allMatches[i];
             setMatch(prevMatch);
         }
     }
     if (prevMatch == null) {
-        alert("Это первый матч.");
+        alert("Р­С‚Рѕ РїРµСЂРІС‹Р№ РјР°С‚С‡ РІ С‚СѓСЂРЅРёСЂРµ.");
     }
 }
 
 function setNextMatch() {
-    var nextMatchId = document.getElementById("nextMatchId");
+    var nextMatchId = document.getElementById("nextMatchId").innerHTML;
     var nextMatch;
     for (var i = 0; i < allMatches.length; i++) {
-        if (allMatches[i][0] == nextMatchId) {//находим матч
+        if (allMatches[i][0] == nextMatchId) {//РЅР°С…РѕРґРёРј РјР°С‚С‡
             nextMatch= allMatches[i];
         }
     }
     if (nextMatch != null && nextMatch!="") {
         setMatch(nextMatch);
     }else{
-        alert("Это финальный матч.");
+        alert("Р­С‚Рѕ РїРѕСЃР»РµРґРЅРёР№ РјР°С‚С‡ РІ С‚СѓСЂРЅРёСЂРµ.");
     }
 }
