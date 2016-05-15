@@ -1,92 +1,121 @@
 import javax.validation.constraints.NotNull;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Абстрактный класс предоставляющий базовую реализацию CRUD операций с использованием JDBC.
- */
 public abstract class AbstractDAO<T extends Identified<PK>, PK extends Integer> implements GenericDao<T, PK> {
 
     protected Connection connection;
 
     /**
-     * Возвращает sql запрос для получения всех записей.
-     * <p/>
+     * <p>
      * SELECT * FROM [Table]
      */
     public abstract String getSelectQuery();
 
     /**
-     * Возвращает sql запрос для вставки новой записи в базу данных.
-     * <p/>
+     * <p>
      * INSERT INTO [Table] ([column, column, ...]) VALUES (?, ?, ...);
      */
     public abstract String getInsertQuery();
 
     /**
-     * Возвращает sql запрос для обновления записи.
-     * <p/>
+     * <p>
      * UPDATE [Table] SET [column = ?, column = ?, ...] WHERE id = ?;
      */
     public abstract String getUpdateQuery();
 
     /**
-     * Возвращает sql запрос для удаления записи из базы данных.
-     * <p/>
+     * <p>
      * DELETE FROM [Table] WHERE id= ?;
      */
     public abstract String getDeleteQuery();
 
-    /**
-     * Разбирает ResultSet и возвращает список объектов соответствующих содержимому ResultSet.
-     */
     protected abstract List<T> parseResultSet(ResultSet rs) throws PersistException;
 
-    /**
-     * Устанавливает аргументы insert запроса в соответствии со значением полей объекта object.
-     */
     protected abstract void prepareStatementForInsert(PreparedStatement statement, T object) throws PersistException;
 
-    /**
-     * Устанавливает аргументы update запроса в соответствии со значением полей объекта object.
-     */
     protected abstract void prepareStatementForUpdate(PreparedStatement statement, T object) throws PersistException;
 
+    @NotNull
     @Override
     public T getByPK(Integer key) throws PersistException {
-        List<T> list;
+        T result = null;
+        try {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            result = getByPKForTranz(key);
+            connection.commit();
+        } catch (Exception e) {
+            e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            try {
+                connection.rollback();
+                throw new PersistException("РўСЂР°РЅР·Р°РєС†РёСЏ РЅРµ РІС‹РїРѕР»РЅРµРЅР°");
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+                connection.setTransactionIsolation(Connection.TRANSACTION_NONE);//РѕС‚РєР»СЋС‡Р°РµРј РїРѕРґРґРµСЂР¶РєСѓ С‚СЂР°РЅР·Р°РєС†РёР№ (СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ)
+            } catch (SQLException e) {
+                e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            }
+        }
+        return result;
+    }
+    public T getByPKForTranz(Integer key) throws PersistException, SQLException {
+        List<T> list = null;
         String sql = getSelectQuery();
         sql += " WHERE id = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, key);
-            ResultSet rs = statement.executeQuery();
-            list = parseResultSet(rs);
-        } catch (Exception e) {
-            throw new PersistException(e);
-        }
-        if (list == null || list.size() == 0) {
-            return null;
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setInt(1, key);
+        ResultSet rs = statement.executeQuery();
+        list = parseResultSet(rs);
+        if (list.size() == 0) {
+            throw new PersistException("Element not found!");
         }
         if (list.size() > 1) {
-            throw new PersistException("По ключу получено более 1-ой записи");
+            throw new PersistException("Found several elements by one PK!");
         }
+
         return list.iterator().next();
     }
 
+    @NotNull
     @Override
     public List<T> getAll() throws PersistException {
+        List<T> list = null;
+        try {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            list = getAllForTranz();
+            connection.commit();
+        } catch (Exception e) {
+            e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            try {
+                connection.rollback();
+                throw new PersistException("РўСЂР°РЅР·Р°РєС†РёСЏ РЅРµ РІС‹РїРѕР»РЅРµРЅР°");
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+                connection.setTransactionIsolation(Connection.TRANSACTION_NONE);//РѕС‚РєР»СЋС‡Р°РµРј РїРѕРґРґРµСЂР¶РєСѓ С‚СЂР°РЅР·Р°РєС†РёР№ (СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ)
+            } catch (SQLException e) {
+                e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            }
+        }
+        return list;
+    }
+    public List<T> getAllForTranz() throws PersistException, SQLException {
         List<T> list;
         String sql = getSelectQuery();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            ResultSet rs = statement.executeQuery();
-            list = parseResultSet(rs);
-        } catch (Exception e) {
-            throw new PersistException(e);
-        }
+        PreparedStatement statement = connection.prepareStatement(sql);
+        ResultSet rs = statement.executeQuery();
+        list = parseResultSet(rs);
+
 
         return list;
     }
@@ -94,154 +123,287 @@ public abstract class AbstractDAO<T extends Identified<PK>, PK extends Integer> 
     @NotNull
     @Override
     public List<T> findByIntParam(String param, int value) throws PersistException {
+        List<T> list = null;
+        try {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            list = findByIntParamForTranz(param, value);
+            connection.commit();
+        } catch (Exception e) {
+            e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            try {
+                connection.rollback();
+                throw new PersistException("РўСЂР°РЅР·Р°РєС†РёСЏ РЅРµ РІС‹РїРѕР»РЅРµРЅР°");
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+                connection.setTransactionIsolation(Connection.TRANSACTION_NONE);//РѕС‚РєР»СЋС‡Р°РµРј РїРѕРґРґРµСЂР¶РєСѓ С‚СЂР°РЅР·Р°РєС†РёР№ (СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ)
+            } catch (SQLException e) {
+                e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            }
+        }
+        return list;
+    }
+    public List<T> findByIntParamForTranz(String param, int value) throws PersistException, SQLException {
         List<T> list;
         String sql = getSelectQuery();
-        sql += " WHERE "+param+" = ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1,value);
-            ResultSet rs = statement.executeQuery();
-            list = parseResultSet(rs);
-        } catch (Exception e) {
-            throw new PersistException(e);
-        }
+        sql += " WHERE " + param + " = ?";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setInt(1, value);
+        ResultSet rs = statement.executeQuery();
+        list = parseResultSet(rs);
+
 
         return list;
     }
 
+    @NotNull
     @Override
     public List<T> findByStringParam(String param, String value) throws PersistException {
+        List<T> list = null;
+        try {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            list = findByStringParamForTranz(param, value);
+            connection.commit();
+        } catch (Exception e) {
+            e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            try {
+                connection.rollback();
+                throw new PersistException("РўСЂР°РЅР·Р°РєС†РёСЏ РЅРµ РІС‹РїРѕР»РЅРµРЅР°");
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+                connection.setTransactionIsolation(Connection.TRANSACTION_NONE);//РѕС‚РєР»СЋС‡Р°РµРј РїРѕРґРґРµСЂР¶РєСѓ С‚СЂР°РЅР·Р°РєС†РёР№ (СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ)
+            } catch (SQLException e) {
+                e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            }
+        }
+        return list;
+    }
+    public List<T> findByStringParamForTranz(String param, String value) throws PersistException, SQLException {
         List<T> list;
         String sql = getSelectQuery();
-        sql += " WHERE "+param+" LIKE  ? ";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1,value);
-            ResultSet rs = statement.executeQuery();
-            list = parseResultSet(rs);
-        } catch (Exception e) {
-            throw new PersistException(e);
-        }
-
+        sql += " WHERE " + param + " LIKE  ? ";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setString(1, value);
+        ResultSet rs = statement.executeQuery();
+        list = parseResultSet(rs);
         return list;
     }
 
+    @NotNull
     @Override
     public List<T> findByDateParam(String param, Date value) throws PersistException {
+        List<T> list = null;
+        try {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            list = findByDateParamForTranz(param, value);
+            connection.commit();
+        } catch (Exception e) {
+            e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            try {
+                connection.rollback();
+                throw new PersistException("РўСЂР°РЅР·Р°РєС†РёСЏ РЅРµ РІС‹РїРѕР»РЅРµРЅР°");
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+                connection.setTransactionIsolation(Connection.TRANSACTION_NONE);//РѕС‚РєР»СЋС‡Р°РµРј РїРѕРґРґРµСЂР¶РєСѓ С‚СЂР°РЅР·Р°РєС†РёР№ (СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ)
+            } catch (SQLException e) {
+                e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            }
+        }
+        return list;
+    }
+    public List<T> findByDateParamForTranz(String param, Date value) throws PersistException, SQLException {
         List<T> list;
         String sql = getSelectQuery();
-        sql += " WHERE "+param+" =  ? ";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setDate(1,value);
-            ResultSet rs = statement.executeQuery();
-            list = parseResultSet(rs);
-        } catch (Exception e) {
-            throw new PersistException(e);
-        }
-
+        sql += " WHERE " + param + " =  ? ";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setDate(1, value);
+        ResultSet rs = statement.executeQuery();
+        list = parseResultSet(rs);
         return list;
     }
 
-
+    /**
+     * СЃРѕС…СЂР°РЅСЏРµРј РѕР±СЉРµРєС‚ РІ Р±Р°Р·Сѓ РґР°РЅРЅС‹С… Рё РїРѕР»СѓС‡Р°РµРј РЅРѕРІС‹Р№ РѕР±СЉРµРєС‚ СЃ РїСЂРёСЃРІРѕРµРЅРЅС‹Рј Id
+     */
+    @NotNull
     @Override
     public T persist(T object) throws PersistException {
+        T result = null;
+        try {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            result = persistForTranz(object);
+            connection.commit();
+        } catch (Exception e) {
+            e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            try {
+                connection.rollback();
+                throw new PersistException("РўСЂР°РЅР·Р°РєС†РёСЏ РЅРµ РІС‹РїРѕР»РЅРµРЅР°");
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+                connection.setTransactionIsolation(Connection.TRANSACTION_NONE);//РѕС‚РєР»СЋС‡Р°РµРј РїРѕРґРґРµСЂР¶РєСѓ С‚СЂР°РЅР·Р°РєС†РёР№ (СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ)
+            } catch (SQLException e) {
+                e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            }
+        }
+        return result;
+    }
+    public T persistForTranz(T object) throws PersistException, SQLException {
         if (object.getId() != null) {
             throw new PersistException("Object is already persist.");
         }
         T persistInstance;
-        // Добавляем запись
         String sql = getInsertQuery();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            prepareStatementForInsert(statement, object);
-            int count = statement.executeUpdate();
-            if (count != 1) {
-                throw new PersistException("Кол-во вставленных записей: " + count);
-            }
-        } catch (Exception e) {
-            throw new PersistException(e);
+        PreparedStatement statement = connection.prepareStatement(sql);
+        prepareStatementForInsert(statement, object);
+        if (statement.executeUpdate() != 1) {
+            throw new PersistException("Р”РѕР±Р°РІР»РµРЅРёРµ РЅРµРєРѕСЂСЂРµРєС‚РЅРѕ");
         }
-        // Получаем только что вставленную запись
         sql = getSelectQuery() + " WHERE id = lastval()";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            ResultSet rs = statement.executeQuery();
-            List<T> list = parseResultSet(rs);
-            if ((list == null) || (list.size() != 1)) {//если предыдущее добавление не удалось, то вылетает ошибка
-                System.out.println("list.size="+list.size());///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                throw new PersistException("Не получилось получить только что вставленную запись");
-            }
-            persistInstance = list.iterator().next();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new PersistException(e);
+        statement = connection.prepareStatement(sql);
+        ResultSet rs = statement.executeQuery();
+        List<T> list = parseResultSet(rs);
+        if (list.size() != 1) {
+            throw new PersistException("Р”РѕР±Р°РІР»РµРЅРёРµ РЅРµРєРѕСЂСЂРµРєС‚РЅРѕ");
         }
+        persistInstance = list.iterator().next();
         return persistInstance;
     }
 
+    @NotNull
     @Override
-
     public T copy(Integer key) throws PersistException {
+        T result = null;
+        try {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            result = copyForTranz(key);
+            connection.commit();
+        } catch (Exception e) {
+            e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            try {
+                connection.rollback();
+                throw new PersistException("РўСЂР°РЅР·Р°РєС†РёСЏ РЅРµ РІС‹РїРѕР»РЅРµРЅР°");
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+                connection.setTransactionIsolation(Connection.TRANSACTION_NONE);//РѕС‚РєР»СЋС‡Р°РµРј РїРѕРґРґРµСЂР¶РєСѓ С‚СЂР°РЅР·Р°РєС†РёР№ (СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ)
+            } catch (SQLException e) {
+                e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            }
+        }
+        return result;
+    }
+    public T copyForTranz(Integer key) throws PersistException, SQLException {
         if (key == null) {
-            throw new PersistException("Указанный ключ не имеет значения");
+            throw new PersistException("РЈРєР°Р·Р°РЅ РЅРµ РІРµСЂРЅС‹Р№ РєР»СЋС‡");
         }
         T copyObject = getByPK(key);
-        T persistInstance;
-        // Добавляем запись
         String sql = getInsertQuery();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            prepareStatementForInsert(statement, copyObject);
-            int count = statement.executeUpdate();
-            if (count != 1) {
-                throw new PersistException("Кол-во вставленных записей: " + count);
-            }
-        } catch (Exception e) {
-            throw new PersistException(e);
+        PreparedStatement statement = connection.prepareStatement(sql);
+        prepareStatementForInsert(statement, copyObject);
+        int count = statement.executeUpdate();
+        if (count != 1) {
+            throw new PersistException("РљРѕРїРёСЂРѕРІР°РЅРёРµ РЅРµ СѓРґР°Р»РѕСЃСЊ");
         }
-        // Получаем только что вставленную запись
         sql = getSelectQuery() + " WHERE id = lastval();";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            ResultSet rs = statement.executeQuery();
-            List<T> list = parseResultSet(rs);//вернуть emptyList
-
-            if ((list == null) || (list.size() != 1)) {
-                System.out.println("list.size="+list.size());
-                throw new PersistException("Не получилось получить только что вставленную запись");
-            }
-            persistInstance = list.iterator().next();
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new PersistException(e);
+        statement = connection.prepareStatement(sql);
+        ResultSet rs = statement.executeQuery();
+        List<T> list = parseResultSet(rs);
+        if (list.size() != 1) {
+            throw new PersistException("РљРѕРїРёСЂРѕРІР°РЅРёРµ РЅРµ СѓРґР°Р»РѕСЃСЊ");
         }
-        return persistInstance;
+        return list.iterator().next();
     }
 
-
+    @NotNull
     @Override
     public void update(T object) throws PersistException {
-        String sql = getUpdateQuery();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            prepareStatementForUpdate(statement, object); // заполнение аргументов запроса оставим на совесть потомков
-            int count = statement.executeUpdate();
-            if (count != 1) {
-                throw new PersistException("Кол-во измененых записей: " + count);
-            }
+        try {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            updateForTranz(object);
+            connection.commit();
         } catch (Exception e) {
-            throw new PersistException(e);
+            e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            try {
+                connection.rollback();
+                throw new PersistException("РўСЂР°РЅР·Р°РєС†РёСЏ РЅРµ РІС‹РїРѕР»РЅРµРЅР°");
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+                connection.setTransactionIsolation(Connection.TRANSACTION_NONE);//РѕС‚РєР»СЋС‡Р°РµРј РїРѕРґРґРµСЂР¶РєСѓ С‚СЂР°РЅР·Р°РєС†РёР№ (СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ)
+            } catch (SQLException e) {
+                e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            }
+        }
+    }
+    public void updateForTranz(T object) throws PersistException, SQLException {
+        String sql = getUpdateQuery();
+        PreparedStatement statement = connection.prepareStatement(sql);
+        prepareStatementForUpdate(statement, object);
+        int count = statement.executeUpdate();
+        if (count != 1) {
+            throw new PersistException("РР·РјРµРЅРµРЅРёСЏ РЅРµ РІРЅРµСЃРµРЅС‹");
         }
     }
 
+    @NotNull
     @Override
     public void delete(T object) throws PersistException {
-        String sql = getDeleteQuery();
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            try {
-                statement.setObject(1, object.getId());
-            } catch (Exception e) {
-                throw new PersistException(e);
-            }
-            int count = statement.executeUpdate();
-            if (count != 1) {
-                throw new PersistException("Кол-во удаленых записей: " + count);
-            }
+        try {
+            connection.setAutoCommit(false);
+            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+            deleteForTranz(object);
+            connection.commit();
         } catch (Exception e) {
-            throw new PersistException(e);
+            e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            try {
+                connection.rollback();
+                throw new PersistException("РўСЂР°РЅР·Р°РєС†РёСЏ РЅРµ РІС‹РїРѕР»РЅРµРЅР°");
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+                connection.setTransactionIsolation(Connection.TRANSACTION_NONE);//РѕС‚РєР»СЋС‡Р°РµРј РїРѕРґРґРµСЂР¶РєСѓ С‚СЂР°РЅР·Р°РєС†РёР№ (СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ)
+            } catch (SQLException e) {
+                e.printStackTrace();//todo Р›РѕРіРіРµСЂ
+            }
+        }
+    }
+    public void deleteForTranz(T object) throws PersistException, SQLException {
+        String sql = getDeleteQuery();
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setObject(1, object.getId());
+        int count = statement.executeUpdate();
+        if (count != 1) {
+            throw new PersistException("РЈРґР°Р»РµРЅРёРµ РЅРµ РїСЂРѕРёР·РѕС€Р»Рѕ");
         }
     }
 
