@@ -66,6 +66,9 @@ public class Teams extends HttpServlet {
         } catch (PersistException e1) {
             e1.printStackTrace();
             response.setStatus(490);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.setStatus(490);
         }
     }
 

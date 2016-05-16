@@ -13,7 +13,7 @@ public class Checker {
             result = Integer.parseInt(str);
             return result;
         } catch (Exception ex) {
-            return null;
+            return null;//todo do something
         }
     }
 

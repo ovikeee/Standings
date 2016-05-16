@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -13,12 +14,12 @@ import java.util.List;
 @WebServlet(urlPatterns = "/historyOfTeam", name = "/HistoryOfTeam")
 public class HistoryOfTeam extends HttpServlet {
     static DaoFactory<Connection> factory = new DaoFactoryPostgreSQL();
-    static DaoMatchPostgreSQL matches;
+   // static ;
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException, ServletException {
         try {
             Integer teamId;
-            matches = (DaoMatchPostgreSQL) factory.getDao(Match.class);//создаем ДАО объект для работы с таблией матчей
+            DaoMatchPostgreSQL matches = (DaoMatchPostgreSQL) factory.getDao(Match.class);//создаем ДАО объект для работы с таблией матчей
             String type = request.getParameter("type");
             if (type != null) {
                 switch (type) {
@@ -26,7 +27,7 @@ public class HistoryOfTeam extends HttpServlet {
                         teamId = Checker.getInt(request.getParameter("teamId"));
                         DaoTournamentPostgreSQL tournaments;
                         tournaments = (DaoTournamentPostgreSQL) factory.getDao(Tournament.class);
-                        List<Tournament> tournamentList = tournaments.getTournamentsHasTeam(teamId);
+                        List<Tournament> tournamentList = tournaments.getTournaments(teamId);
                         if (!tournamentList.isEmpty()) {
                             sendSelectorsTournament(response, tournamentList);
                         } else {
@@ -44,6 +45,9 @@ public class HistoryOfTeam extends HttpServlet {
                 }
             }
         } catch (PersistException e) {
+            e.printStackTrace();
+            response.setStatus(490);
+        } catch (SQLException e) {
             e.printStackTrace();
             response.setStatus(490);
         }
@@ -69,11 +73,11 @@ public class HistoryOfTeam extends HttpServlet {
         }
     }
 
-    private void sendMatch(HttpServletResponse response, List<Match> matchList) {
+    private void sendMatch(HttpServletResponse response, List<Match> matchList) throws SQLException {
         try {
             DaoTeamPostgreSQL teams;
             teams = (DaoTeamPostgreSQL) factory.getDao(Team.class);
-            if (matchList != null && !matchList.isEmpty()) {
+            if (!matchList.isEmpty()) {
                 response.setContentType("application/json;charset=UTF-8");
                 org.json.JSONWriter jw = new org.json.JSONWriter(response.getWriter());
                 jw.array();
@@ -110,6 +114,9 @@ public class HistoryOfTeam extends HttpServlet {
                     jw.endObject();
                 }
                 jw.endArray();
+            }else {
+                System.out.println("Матчей нет");
+                response.setStatus(490);
             }
         } catch (IOException e1) {
             e1.printStackTrace();

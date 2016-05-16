@@ -1,7 +1,10 @@
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.RowMapper;
+
+import javax.sql.DataSource;
+import javax.validation.constraints.NotNull;
+import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,66 +13,83 @@ import java.util.List;
  * CRUD операции, получение объектного представления объектов БД.
  */
 public class DaoMatchPostgreSQL extends AbstractDAO<Match, Integer> {
-
     private class PersistMatch extends Match {
         public void setId(int id) {
             super.setId(id);
         }
     }
 
-    public DaoMatchPostgreSQL(Connection connection) {
-        super(connection);
+    public DaoMatchPostgreSQL(DataSource dataSource) throws SQLException {
+        super(dataSource);
     }
 
-    public List<Match> getCascadeMatches(int id) {
+    @NotNull
+    //todo добавить транзакции
+    public List<Match> getCascadeMatches(int id) throws PersistException {
         List<Match> list = null;
-        String sql = "WITH RECURSIVE r AS ( SELECT a.* FROM matches a  WHERE id = " + id + " UNION ALL SELECT b.* FROM matches b JOIN r  ON b.next_match_id = r.id ) SELECT * FROM r;";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            // statement.setInt(1, 3);
-            ResultSet rs = statement.executeQuery();
-            list = parseResultSet(rs);
+        String sql = "WITH RECURSIVE r AS ( SELECT a.* FROM matches a  WHERE id = ? UNION ALL SELECT b.* FROM matches b JOIN r  ON b.next_match_id = r.id ) SELECT * FROM r";
+        try {
+//            connection.setAutoCommit(false);
+//            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+//            PreparedStatement statement = connection.prepareStatement(sql);
+//            ////  statement.setInt(1, id);//todo не работает?!!!
+//            ResultSet rs = statement.executeQuery();
+            list = jdbcTemplate.query(sql, new Object[]{id}, getMapper());
+//            list = parseResultSet(rs);
+//            connection.commit();
         } catch (Exception e) {
-            // throw new PersistException(e);
+            e.printStackTrace();//todo Логгер
+//            try {
+//                connection.rollback();
+            throw new PersistException("Транзакция не выполнена");
+//            } catch (SQLException e1) {
+//                e1.printStackTrace();
+//            }
+        } finally {
+//            try {
+//                connection.setAutoCommit(true);
+//                connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);//отключаем поддержку транзакций (устанавливаем по-умолчанию)
+//            } catch (SQLException e) {
+//                e.printStackTrace();//todo Логгер
+//            }
         }
         return list;
     }
 
-    //select * from matches where (guests_id = 1 OR owner_id = 1) AND tournament_id=11;
-
-    public List<Match> getMatches(int teamId, int tournamentId){
+    @NotNull
+    public List<Match> getMatches(int teamId, int tournamentId) throws PersistException {
         List<Match> list = null;
         String sql = "select * from matches where (guests_id = ? OR owner_id = ?) AND tournament_id=?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, teamId);
-            statement.setInt(2, teamId);
-            statement.setInt(3, tournamentId);
-            ResultSet rs = statement.executeQuery();
-            list = parseResultSet(rs);
+        try {
+//            connection.setAutoCommit(false);
+//            connection.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+//            PreparedStatement statement = connection.prepareStatement(sql);
+//            statement.setInt(1, teamId);
+//            statement.setInt(2, teamId);
+//            statement.setInt(3, tournamentId);
+//            ResultSet rs = statement.executeQuery();
+            list = jdbcTemplate.query(sql, new Object[]{teamId, teamId, tournamentId}, getMapper());
+//            list = parseResultSet(rs);
+//            connection.commit();
         } catch (Exception e) {
+            e.printStackTrace();//todo Логгер
+//            try {
+//                connection.rollback();
+                throw new PersistException("Транзакция не выполнена");
+//            } catch (SQLException e1) {
+//                e1.printStackTrace();
+//            }
+
+        } finally {
+//            try {
+//                connection.setAutoCommit(true);
+//                connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);//отключаем поддержку транзакций (устанавливаем по-умолчанию)
+//            } catch (SQLException e) {
+//                e.printStackTrace();//todo Логгер
+//            }
         }
         return list;
     }
-
-    /**
-     * находит матчи у которых поле nextMatch равен введеному id
-     * возвращает список типа Match
-     */
-//    public List<Match> getMatchWithTeam(int id) {
-//        List<Match> list = null;
-//        String sql = "SELECT id FROM matches WHERE next_match_id=?;";
-//        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-//            statement.setInt(1, id);
-//            ResultSet rs = statement.executeQuery();
-//            if (rs != null) {
-//                list = parseResultSet(rs);
-//            }
-//        } catch (Exception e) {
-//            // throw new PersistException(e);
-//        }
-//        return list;
-//    }
-//
-
 
     @Override
     public String getSelectQuery() {
@@ -80,6 +100,25 @@ public class DaoMatchPostgreSQL extends AbstractDAO<Match, Integer> {
     public String getInsertQuery() {
         return "insert into matches (stage, tournament_id, match_data,owner_id, guests_id, owner_id_score, guests_id_score," +
                 " next_match_id, status ) values(?,?,?,?,?,?,?,?,?)";
+    }
+
+    @Override
+    public PreparedStatementSetter getPSSInsertQuery(Match match) {
+        final Match object = match;
+        PreparedStatementSetter result = new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                preparedStatement.setString(1, object.getStage());
+                preparedStatement.setInt(2, object.getTournamentId());
+                preparedStatement.setDate(3, (Date) object.getMatchData());
+                Checker.setInt(preparedStatement, 4, object.getOwnerId());//на случай, если значение null
+                Checker.setInt(preparedStatement, 5, object.getGuestsId());
+                Checker.setInt(preparedStatement, 6, object.getOwnerScore());
+                Checker.setInt(preparedStatement, 7, object.getGuestsScore());
+                Checker.setInt(preparedStatement, 8, object.getNextMatchId());
+                preparedStatement.setString(9, object.getStatus());
+            }
+        };
+        return result;
     }
 
     @Override
@@ -97,9 +136,30 @@ public class DaoMatchPostgreSQL extends AbstractDAO<Match, Integer> {
     }
 
     @Override
+    public PreparedStatementSetter getPSSUpdateQuery(Match match) {
+        final Match object = match;
+        PreparedStatementSetter result = new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                preparedStatement.setString(1, object.getStage());
+                preparedStatement.setInt(2, object.getTournamentId());
+                preparedStatement.setDate(3, (Date) object.getMatchData());
+                Checker.setInt(preparedStatement, 4, object.getOwnerId());//на случай, если значение null
+                Checker.setInt(preparedStatement, 5, object.getGuestsId());
+                Checker.setInt(preparedStatement, 6, object.getOwnerScore());
+                Checker.setInt(preparedStatement, 7, object.getGuestsScore());
+                Checker.setInt(preparedStatement, 8, object.getNextMatchId());
+                preparedStatement.setString(9, object.getStatus());
+                preparedStatement.setInt(10, object.getId());
+            }
+        };
+        return result;
+    }
+
+    @Override
     public String getDeleteQuery() {
         return "DELETE FROM matches WHERE id= ?";
     }
+
 
     @Override
     public Match create() throws PersistException {
@@ -109,13 +169,8 @@ public class DaoMatchPostgreSQL extends AbstractDAO<Match, Integer> {
 
     @Override
     protected List<Match> parseResultSet(ResultSet rs) throws PersistException {
-        LinkedList<Match> result = null;
+        LinkedList<Match> result = new LinkedList();
         try {
-            if (rs != null) {
-                result = new LinkedList<>();
-            } else {
-                return null;
-            }
             while (rs.next()) {
                 PersistMatch match = new PersistMatch();
                 match.setId(rs.getInt("id"));
@@ -169,6 +224,11 @@ public class DaoMatchPostgreSQL extends AbstractDAO<Match, Integer> {
         } catch (Exception e) {
             throw new PersistException(e);
         }
+    }
+
+    @Override
+    protected RowMapper<Match> getMapper() {
+        return new MatchMapper();
     }
 
 

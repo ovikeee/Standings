@@ -1,4 +1,3 @@
-
 DROP INDEX IF EXISTS matches__owner_id__index;
 DROP INDEX IF EXISTS matches__guests_id__index;
 DROP INDEX IF EXISTS matches__next_match_id__index;

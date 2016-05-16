@@ -5,6 +5,8 @@
 //import org.json.simple.JSONObject;
 //import org.json.simple.JSONArray;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -13,6 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Date;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
@@ -90,17 +94,20 @@ public class Matches extends HttpServlet {
                         response.setStatus(490);
                         matchList = matches.getAll(); //получение всех матчей
                 }
-                if (type != "loadSelectBox" && type !="loadSelectBoxTournament" ) {
+                if (type != "loadSelectBox" && type != "loadSelectBoxTournament") {
                     sendJSON(response, matchList);//отправка JSON данных
                 }
             }
         } catch (PersistException e) {
             e.printStackTrace();
             response.setStatus(490);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.setStatus(490);
         }
     }
 
-    private List<Match> findBy(String findType, String value) {
+    private List<Match> findBy(String findType, String value) throws SQLException {
         List<Match> result = null;// = new LinkedList();
         DaoTeamPostgreSQL teams;
         DaoTournamentPostgreSQL tournaments;
@@ -117,15 +124,15 @@ public class Matches extends HttpServlet {
                     break;
                 case "team_title":
                     List<Team> teamList = teams.findByStringParam("title", value);
-                    if(teamList!=null){
+                    if (teamList != null) {
                         int id = teamList.iterator().next().getId();
                         result = matches.findByIntParam("owner_id", id);//получаем все матчи, где учавствует команда
                         result.addAll(matches.findByIntParam("guests_id", id));// с названием value
                     }
                     break;
-                case "tournament_title" :
+                case "tournament_title":
                     List<Tournament> tournamentList = tournaments.findByStringParam("title", value);
-                    if(tournamentList!=null){
+                    if (tournamentList != null) {
                         int id = tournamentList.iterator().next().getId();
                         result = matches.findByIntParam("tournament_id", id);//получаем все матчи турнира value
                     }
@@ -154,17 +161,24 @@ public class Matches extends HttpServlet {
         }
     }
 
-    private boolean editMatch(HttpServletRequest request) {
+    private boolean editMatch(final HttpServletRequest request) {
         try {
-            Match match = new Match(); //(Match) factory.getDao(Match.class).create();
-            Integer checkInt = Checker.getInt(request.getParameter("matchId"));
-            if (checkInt != null) {
-                match.setId(checkInt);
-            } else {
-                throw new PersistException("Поле matchId не заданно");
-            }
-            setMatch(match, request);
-            matches.update(match);
+            UserTransactionManager.getInstance().doInTransaction(new TransactedAction() {
+                @Override
+                public Object execute() throws Exception {
+                    Match match = new Match(); //(Match) factory.getDao(Match.class).create();
+                    Integer checkInt = Checker.getInt(request.getParameter("matchId"));
+                    if (checkInt != null) {
+                        System.out.println("setId: " + checkInt);
+                        match.setId(checkInt);
+                    } else {
+                        throw new PersistException("Поле matchId не заданно");
+                    }
+                    setMatch(match, request);
+                    matches.update(match);
+                    return null;
+                }
+            }, matches.getDataSource());
             return true;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -184,8 +198,19 @@ public class Matches extends HttpServlet {
             throw new PersistException("Поле tournamentId не заданно");
         }
         match.setStage(Checker.notEmpty(request.getParameter("stageId")));//установил null или переданное значение
-        java.util.Date utilDate = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").parse(request.getParameter("dateId"));
-        java.sql.Date sqlDate = new java.sql.Date(utilDate.getTime());
+        String datetimeLocal = request.getParameter("dateId");
+// make sure the seconds are set before parsing
+        if (StringUtils.countMatches(datetimeLocal, ":") == 1) {
+            datetimeLocal += ":00";
+        }
+        Timestamp value = Timestamp.valueOf(datetimeLocal.replace("T", " "));
+//        java.util.Date utilDate;
+//        try {
+//            utilDate = new SimpleDateFormat("dd-MM-yyyy HH:mm").parse(request.getParameter("dateId"));
+//        }catch (java.text.ParseException ex){
+////            utilDate = new SimpleDateFormat("yyyy-MM--dd HH:mm").parse(request.getParameter("dateId"));
+//        }
+        java.sql.Date sqlDate = new java.sql.Date(value.getTime());
         match.setMatchData(sqlDate);//если excepion не вылетел выше, то добавляем
         match.setOwnerId(Checker.getInt(request.getParameter("ownerId")));//установил либо null либо значение
         match.setGuestsId(Checker.getInt(request.getParameter("guestsId")));
@@ -201,13 +226,20 @@ public class Matches extends HttpServlet {
 
     }
 
-    private void removeMatch(int matchId) throws PersistException {
-        Match match = new Match();
-        match.setId(matchId);
-        matches.delete(match);
+    private void removeMatch(final int matchId) throws PersistException {
+
+        UserTransactionManager.getInstance().doInTransaction(new TransactedAction() {
+            @Override
+            public Object execute() throws Exception {
+                Match match = new Match();
+                match.setId(matchId);
+                matches.delete(match);
+                return null;
+            }
+        }, matches.getDataSource());
     }
 
-    private void sendJSON(HttpServletResponse response, List<Match> matchList) {
+    private void sendJSON(HttpServletResponse response, List<Match> matchList) throws SQLException {
         try {
             DaoTeamPostgreSQL teams;
             DaoTournamentPostgreSQL tournaments;
@@ -260,7 +292,7 @@ public class Matches extends HttpServlet {
         }
     }
 
-    private void sendSelectors(HttpServletResponse response) {
+    private void sendSelectors(HttpServletResponse response) throws SQLException {
         try {
 //
 //            JSONArray arTeam = new JSONArray();
@@ -329,7 +361,7 @@ public class Matches extends HttpServlet {
         }
     }
 
-    private void sendSelectorsTournament(HttpServletResponse response) {
+    private void sendSelectorsTournament(HttpServletResponse response) throws SQLException {
         try {
 //
 //            JSONArray arTeam = new JSONArray();

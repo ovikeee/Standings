@@ -1,7 +1,8 @@
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.RowMapper;
+
+import javax.sql.DataSource;
+import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,10 +28,33 @@ public class DaoTeamPostgreSQL extends AbstractDAO<Team, Integer> {
     }
 
     @Override
+    public PreparedStatementSetter getPSSInsertQuery(Team team) {
+        final Team object = team;
+        PreparedStatementSetter result = new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                preparedStatement.setString(1, object.getTitle());
+            }
+        };
+        return result;
+    }
+
+    @Override
     public String getUpdateQuery() {
         return "UPDATE teams SET" +
                 " title= ?" +
                 " WHERE id= ?";
+    }
+
+    @Override
+    public PreparedStatementSetter getPSSUpdateQuery(Team team) {
+        final Team object = team;
+        PreparedStatementSetter result = new PreparedStatementSetter() {
+            public void setValues(PreparedStatement preparedStatement) throws SQLException {
+                preparedStatement.setString(1, object.getTitle());
+                preparedStatement.setInt(2, object.getId());
+            }
+        };
+        return result;
     }
 
     @Override
@@ -44,8 +68,8 @@ public class DaoTeamPostgreSQL extends AbstractDAO<Team, Integer> {
         return persist(g);
     }
 
-    public DaoTeamPostgreSQL(Connection connection) {
-        super(connection);
+    public DaoTeamPostgreSQL(DataSource dataSource) throws SQLException {
+        super(dataSource);
     }
 
     @Override
@@ -53,10 +77,10 @@ public class DaoTeamPostgreSQL extends AbstractDAO<Team, Integer> {
         LinkedList<Team> result = new LinkedList<Team>();
         try {
             while (rs.next()) {
-                PersistTeam Team = new PersistTeam();
-                Team.setId(rs.getInt("id"));
-                Team.setTitle(rs.getString("title"));
-                result.add(Team);
+                PersistTeam team = new PersistTeam();
+                team.setId(rs.getInt("id"));
+                team.setTitle(rs.getString("title"));
+                result.add(team);
             }
         } catch (Exception e) {
             throw new PersistException(e);
@@ -81,6 +105,11 @@ public class DaoTeamPostgreSQL extends AbstractDAO<Team, Integer> {
         } catch (Exception e) {
             throw new PersistException(e);
         }
+    }
+
+    @Override
+    protected RowMapper<Team> getMapper() {
+        return new TeamMapper();
     }
 
 }
